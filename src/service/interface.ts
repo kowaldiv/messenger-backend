@@ -7,5 +7,5 @@ export interface AuthService {
     username: string;
     firstName: string;
     lastName?: string;
-  }): { user: PublicUser; token: string };
+  }): Promise<{ user: PublicUser; token: string }>;
 }

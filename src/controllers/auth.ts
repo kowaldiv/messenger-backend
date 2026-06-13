@@ -16,7 +16,9 @@ export function authController(userService: AuthService) {
       });
 
       return reply.status(201).send({ user, token });
-    } catch (error) {}
+    } catch (error) {
+      return reply.status(500).send(error)
+    }
   };
 
   return {
