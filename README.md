@@ -5,15 +5,21 @@ This project was bootstrapped with Fastify-CLI.
 
 In the project directory, you can run:
 
+### `npm install`
+### `npx prisma generate`
 ### `npm run dev`
 
 To start the app in dev mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
+### `npm install`
+### `npx prisma generate`
 ### `npm start`
 
 For production mode
 
+### `npm install`
+### `npx prisma generate`
 ### `npm run test`
 
 Run the test cases.
