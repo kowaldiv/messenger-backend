@@ -3,8 +3,9 @@ import { ConflictError } from "../errors/index.js";
 import { UserRepository } from "../repositories/interface.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { AuthService } from "./interface.js";
 
-export function authService(userRepository: UserRepository) {
+export function authService(userRepository: UserRepository): AuthService {
   const register = async (data: {
     email: string;
     password: string;

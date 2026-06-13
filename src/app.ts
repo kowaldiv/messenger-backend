@@ -1,6 +1,11 @@
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import AutoLoad, { AutoloadPluginOptions } from '@fastify/autoload'
 import { FastifyPluginAsync, FastifyServerOptions } from 'fastify'
+
+// Получаем __dirname в ESM
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = join(__filename, '..')
 
 export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPluginOptions> {
 
