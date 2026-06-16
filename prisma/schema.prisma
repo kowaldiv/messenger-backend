@@ -25,7 +25,7 @@ model Avatars {
   entityType String   @map("entity_type") @db.VarChar(10)
   userId     String?  @map("user_id") @db.Uuid
   chatId     String?  @map("chat_id") @db.Uuid
-  avatarUrl  String
+  avatarUrl  String   @map("avatar_url")
   isPrimary  Boolean  @default(true) @map("is_primary")
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
   chats      Chats?   @relation(fields: [chatId], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -127,13 +127,14 @@ model Reports {
 }
 
 model Sessions {
-  id           String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  userId       String   @map("user_id") @db.Uuid
-  refreshToken String   @map("refresh_token") @db.VarChar(255)
-  fingerprint  String   @db.VarChar(255)
-  expiresAt    DateTime @map("expires_at") @db.Timestamp(6)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
-  users        Users    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sessions_user")
+  id          String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  token       String   @unique @db.VarChar(255)
+  tokenType   String   @map("token_type") @db.VarChar(15)
+  fingerprint String   @db.VarChar(255)
+  expiresAt   DateTime @map("expires_at") @db.Timestamp(6)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  users       Users    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sessions_user")
 
   @@map("sessions")
 }
