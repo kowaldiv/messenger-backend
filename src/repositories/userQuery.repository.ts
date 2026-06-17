@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { UserQueryRepository } from "./interface.js";
+import { UserQueryRepository } from "./interfaces/userQuery.repository.interface.js";
 
 export function userQueryRepository(
   instance: FastifyInstance,

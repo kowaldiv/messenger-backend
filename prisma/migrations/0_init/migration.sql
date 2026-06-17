@@ -133,3 +133,13 @@ create table
     foreign key (message_id) references messages (id) on delete cascade,
     foreign key (user_id) references users (id) on delete set null
   );
+
+create table
+  users_blocks (
+    blocker_id UUID not null,
+    blocked_id UUID not null,
+    created_at timestamp not null default NOW (),
+    primary key (blocker_id, blocked_id),
+    foreign key (blocker_id) references users (id) on delete cascade,
+    foreign key (blocked_id) references users (id) on delete cascade
+  );

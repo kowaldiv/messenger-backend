@@ -1,6 +1,6 @@
 import { type FastifyPluginAsync } from "fastify";
 import { userRepository } from "../../repositories/user.repository.js";
-import { authController } from "../../controllers/auth.js";
+import { authController } from "../../controllers/auth.controller.js";
 import { authService } from "../../service/auth.service.js";
 import { tokenRepository } from "../../repositories/token.repository.js";
 import { authRepository } from "../../repositories/auth.repositofy.js";

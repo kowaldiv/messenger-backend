@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { AuthRepository } from "./interface.js";
+import { AuthRepository } from "./interfaces/auth.repository.interface.js";
 
 export function authRepository(instance: FastifyInstance): AuthRepository {
   const prisma = instance.prisma;

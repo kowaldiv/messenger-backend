@@ -1,5 +1,5 @@
 import { type FastifyInstance } from "fastify";
-import type { CreateUserInput, UserRepository } from "./interface.js";
+import { CreateUserInput, UpdateUserProfileInput, UserRepository } from "./interfaces/user.repository.interface.js";
 
 export function userRepository(instance: FastifyInstance): UserRepository {
   const prisma = instance.prisma;
@@ -74,7 +74,7 @@ export function userRepository(instance: FastifyInstance): UserRepository {
 
   // ------ обновление -------
 
-  const updateProfile = async (id: string, data: CreateUserInput) => {
+  const updateProfile = async (id: string, data: UpdateUserProfileInput) => {
     const user = await prisma.users.update({
       where: { id },
       data: {

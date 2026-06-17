@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { TokenRepository } from "./interface.js";
+import { TokenRepository } from "./interfaces/token.repository.interface.js";
 
 export function tokenRepository(instance: FastifyInstance): TokenRepository {
   const prisma = instance.prisma;

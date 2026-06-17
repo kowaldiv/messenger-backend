@@ -3,16 +3,14 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from "../errors/index.js";
-import {
-  AuthRepository,
-  TokenRepository,
-  UserQueryRepository,
-  UserRepository,
-} from "../repositories/interface.js";
 import bcrypt from "bcrypt";
 import { AuthService } from "./interface.js";
 import { FastifyInstance } from "fastify";
 import { config } from "../config/index.js";
+import { UserRepository } from "../repositories/interfaces/user.repository.interface.js";
+import { UserQueryRepository } from "../repositories/interfaces/userQuery.repository.interface.js";
+import { TokenRepository } from "../repositories/interfaces/token.repository.interface.js";
+import { AuthRepository } from "../repositories/interfaces/auth.repository.interface.js";
 
 export function authService(
   userRepository: UserRepository,
