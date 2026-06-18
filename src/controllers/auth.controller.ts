@@ -6,17 +6,25 @@ export function authController(authService: AuthService) {
   const register = async (request: FastifyRequest, reply: FastifyReply) => {
     const { email, password, username, firstName, lastName } =
       request.body as any;
-    const { user, refreshToken } = await authService.register({
+    const { user, refreshToken, accessToken } = await authService.register({
       email,
       password,
       username,
       firstName,
       lastName,
     });
+    reply.setCookie("token", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: true,
+      path: '/',
+      maxAge: 1 * 60 * 60,
+    });
     reply.setCookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: true,
+      path: '/',
       maxAge: 7 * 24 * 60 * 60,
     });
     return reply.status(201).send({ user });
@@ -24,14 +32,22 @@ export function authController(authService: AuthService) {
 
   const login = async (request: FastifyRequest, reply: FastifyReply) => {
     const { email, password } = request.body as any;
-    const { user, refreshToken } = await authService.login({
+    const { user, refreshToken, accessToken } = await authService.login({
       email,
       password,
+    });
+    reply.setCookie("token", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: true,
+      path: '/',
+      maxAge: 1 * 60 * 60,
     });
     reply.setCookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: true,
+      path: '/',
       maxAge: 7 * 24 * 60 * 60,
     });
     return reply.status(201).send({ user });
@@ -64,12 +80,14 @@ export function authController(authService: AuthService) {
       httpOnly: true,
       secure: true,
       sameSite: true,
+      path: '/',
       maxAge: 1 * 60 * 60,
     });
     reply.setCookie("refresh_token", newRefreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: true,
+      path: '/',
       maxAge: 7 * 24 * 60 * 60,
     });
   };

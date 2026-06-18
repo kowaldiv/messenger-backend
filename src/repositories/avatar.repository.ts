@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { AvatarRepository } from "./interfaces/avatar.repository.interface.js";
+import { Prisma } from "../generated/prisma/browser.js";
 
 export function avatarRepository(instance: FastifyInstance): AvatarRepository {
   const prisma = instance.prisma;
@@ -110,12 +111,50 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
   ) => {
     const whereCondition =
       entityType === "user" ? { userId: entityId } : { chatId: entityId };
-    await prisma.avatars.delete({
+    const lastAdded = await prisma.avatars.findFirst({
+      where: whereCondition,
+      orderBy: { createdAt: "desc" },
+      select: { id: true },
+    });
+
+    const operations: Prisma.PrismaPromise<any>[] = [];
+
+    operations.push(
+      prisma.avatars.delete({
+        where: {
+          ...whereCondition,
+          id: avatarId,
+        },
+      }),
+    );
+
+    if (lastAdded) {
+      operations.push(
+        prisma.avatars.update({
+          where: {
+            ...whereCondition,
+            id: avatarId,
+          },
+          data: { isPrimary: true },
+        }),
+      );
+    }
+
+    await prisma.$transaction(operations);
+  };
+
+  const ensureUserIsChatOwner = async (userId: string, chatId: string) => {
+    const participant = await prisma.chatParticipants.findFirst({
       where: {
-        ...whereCondition,
-        id: avatarId,
+        chatId,
+        userId,
       },
     });
+    if (participant && participant.role === "owner") {
+      return true;
+    } else {
+      return false;
+    }
   };
 
   return {
@@ -124,5 +163,6 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
     addAvatar,
     setPrimaryAvatar,
     deleteAvatar,
+    ensureUserIsChatOwner,
   };
 }

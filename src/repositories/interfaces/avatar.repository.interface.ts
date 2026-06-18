@@ -27,4 +27,5 @@ export interface AvatarRepository {
     entityId: string,
     avatarId: string,
   ): Promise<void>;
+  ensureUserIsChatOwner(userId: string, chatId: string): Promise<boolean>;
 }

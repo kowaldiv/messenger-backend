@@ -35,19 +35,22 @@ export interface uploadAvatarInput {
 }
 
 export interface AvatarService {
-  uploadAvatar(
-    entityType: "user" | "chat",
-    entityId: string,
+  uploadUserAvatar(entityId: string, input: uploadAvatarInput): Promise<Avatar>;
+  setPrimaryUserAvatar(entityId: string, avatarId: string): Promise<void>;
+  deleteUserAvatar(entityId: string, avatarId: string): Promise<void>;
+  uploadChatAvatar(
+    userId: string,
+    chatId: string,
     input: uploadAvatarInput,
   ): Promise<Avatar>;
-  setPrimaryAvatar(
-    entityType: "user" | "chat",
-    entityId: string,
+  setPrimaryChatAvatar(
+    userId: string,
+    chatId: string,
     avatarId: string,
   ): Promise<void>;
-  deleteAvatar(
-    entityType: "user" | "chat",
-    entityId: string,
+  deleteChatAvatar(
+    userId: string,
+    chatId: string,
     avatarId: string,
   ): Promise<void>;
   getAvatars(entityType: "user" | "chat", entityId: string): Promise<Avatar[]>;
