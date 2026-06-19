@@ -112,7 +112,7 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
     const whereCondition =
       entityType === "user" ? { userId: entityId } : { chatId: entityId };
     const lastAdded = await prisma.avatars.findFirst({
-      where: whereCondition,
+      where: { ...whereCondition, NOT: { id: avatarId } },
       orderBy: { createdAt: "desc" },
       select: { id: true },
     });
@@ -133,7 +133,7 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
         prisma.avatars.update({
           where: {
             ...whereCondition,
-            id: avatarId,
+            id: lastAdded.id,
           },
           data: { isPrimary: true },
         }),
