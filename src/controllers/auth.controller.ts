@@ -36,7 +36,7 @@ export function authController(authService: AuthService) {
       email,
       password,
     });
-    reply.setCookie("token", accessToken, {
+    reply.setCookie("access_token", accessToken, {
       httpOnly: true,
       secure: true,
       sameSite: true,
@@ -76,7 +76,7 @@ export function authController(authService: AuthService) {
     if (!refreshToken) throw new UnauthorizedError("NO_REFRESH_TOKEN");
     const { accessToken, newRefreshToken } =
       await authService.refreshToken(refreshToken);
-    reply.setCookie("token", accessToken, {
+    reply.setCookie("access_token", accessToken, {
       httpOnly: true,
       secure: true,
       sameSite: true,
@@ -99,7 +99,7 @@ export function authController(authService: AuthService) {
     await authService.logout(refreshToken);
 
     reply.clearCookie("refresh_token", { path: "/" });
-    reply.clearCookie("token", { path: "/" });
+    reply.clearCookie("access_token", { path: "/" });
     return reply.status(200).send();
   };
 
