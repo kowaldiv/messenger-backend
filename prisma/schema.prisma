@@ -7,7 +7,7 @@ datasource db {
   provider = "postgresql"
 }
 
-model Attachmenst {
+model Attachmensts {
   id        String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
   messageId String   @map("message_id") @db.Uuid
   fileUrl   String   @map("file_url")
@@ -25,7 +25,7 @@ model Avatars {
   entityType String   @map("entity_type") @db.VarChar(10)
   userId     String?  @map("user_id") @db.Uuid
   chatId     String?  @map("chat_id") @db.Uuid
-  avatarUrl  String
+  avatarUrl  String   @map("avatar_url")
   isPrimary  Boolean  @default(true) @map("is_primary")
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
   chats      Chats?   @relation(fields: [chatId], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -105,7 +105,7 @@ model Messages {
   isDeleted         Boolean            @default(false) @map("is_deleted")
   createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamp(6)
   editedAt          DateTime           @default(now()) @map("edited_at") @db.Timestamp(6)
-  attachmenst       Attachmenst[]
+  attachmenst       Attachmensts[]
   message_reactions MessageReactions[]
   chats             Chats?             @relation(fields: [chatId], references: [id], onUpdate: NoAction)
   users             Users?             @relation(fields: [userId], references: [id], onUpdate: NoAction)
@@ -127,13 +127,14 @@ model Reports {
 }
 
 model Sessions {
-  id           String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  userId       String   @map("user_id") @db.Uuid
-  refreshToken String   @map("refresh_token") @db.VarChar(255)
-  fingerprint  String   @db.VarChar(255)
-  expiresAt    DateTime @map("expires_at") @db.Timestamp(6)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
-  users        Users    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sessions_user")
+  id          String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  token       String   @unique @db.VarChar(255)
+  tokenType   String   @map("token_type") @db.VarChar(15)
+  fingerprint String   @db.VarChar(255)
+  expiresAt   DateTime @map("expires_at") @db.Timestamp(6)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  users       Users    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sessions_user")
 
   @@map("sessions")
 }
@@ -158,6 +159,19 @@ model Users {
   messages         Messages[]
   reports          Reports[]
   sessions         Sessions[]
+  userBlocks       UserBlock[]        @relation("UserBlocks")
+  userBlockedBy    UserBlock[]        @relation("UserBlockedBy")
 
   @@map("users")
+}
+
+model UserBlock {
+  blockerId String   @map("blocker_id") @db.Uuid
+  blockedId String   @map("blocked_id") @db.Uuid
+  blocker   Users?   @relation("UserBlocks", fields: [blockerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  blocked   Users?   @relation("UserBlockedBy", fields: [blockedId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@id([blockerId, blockedId])
+  @@map("users_blocks")
 }

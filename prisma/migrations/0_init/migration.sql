@@ -2,20 +2,24 @@ create table
   users (
     id UUID primary key default uuidv7 (),
     global_role varchar(20) default 'user' check (global_role in ('user', 'moderator')) NOT NULL,
-    username varchar(30) NOT null,
-    email varchar(100) NOT null,
+    username varchar(30) unique NOT null,
+    first_name varchar(30) NOT null,
+    last_name varchar(30),
+    email varchar(100) unique NOT null,
     password_hash varchar(255) NOT null,
     bio varchar(100),
     last_seen timestamp NOT null,
     created_at timestamp NOT null default NOW (),
-    updated_at timestamp NOT null default NOW ()
+    updated_at timestamp NOT null default NOW (),
+    is_banned BOOLEAN DEFAULT FALSE NOT NULL
   );
 
 create table
   sessions (
     id UUID primary key default uuidv7 (),
     user_id UUID not null,
-    refresh_token varchar(255) not null,
+    token varchar(255) not null UNIQUE,
+    token_type varchar(15) not null default 'refresh' check (token_type in ('refresh', 'reset_password')),
     fingerprint varchar(255) not null,
     expires_at timestamp not null,
     created_at timestamp not null default NOW (),
@@ -69,7 +73,7 @@ create table
     chat_id UUID references chats (id) on delete cascade,
     avatar_url text not null,
     is_primary boolean not null default true,
-    create_at timestamp not null default NOW (),
+    created_at timestamp not null default NOW (),
     check (
       (
         entity_type = 'user'
@@ -128,4 +132,14 @@ create table
     emoji varchar(10) not null,
     foreign key (message_id) references messages (id) on delete cascade,
     foreign key (user_id) references users (id) on delete set null
+  );
+
+create table
+  users_blocks (
+    blocker_id UUID not null,
+    blocked_id UUID not null,
+    created_at timestamp not null default NOW (),
+    primary key (blocker_id, blocked_id),
+    foreign key (blocker_id) references users (id) on delete cascade,
+    foreign key (blocked_id) references users (id) on delete cascade
   );

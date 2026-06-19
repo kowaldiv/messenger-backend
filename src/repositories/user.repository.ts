@@ -1,16 +1,10 @@
 import { type FastifyInstance } from "fastify";
-import type {
-  Avatar,
-  CreateUserInput,
-  PublicUser,
-  PublicUserWithAvatars,
-  UserRepository,
-} from "./interface.js";
+import { CreateUserInput, UpdateUserProfileInput, UserRepository } from "./interfaces/user.repository.interface.js";
 
 export function userRepository(instance: FastifyInstance): UserRepository {
   const prisma = instance.prisma;
 
-  const findById = async (id: string): Promise<PublicUser | null> => {
+  const findById = async (id: string) => {
     const user = prisma.users.findUnique({
       where: { id },
       select: {
@@ -26,9 +20,9 @@ export function userRepository(instance: FastifyInstance): UserRepository {
     return user;
   };
 
-  const findByIdWithPrimaryAvatar = async (id: string) => {
-    const user = prisma.users.findUnique({
-      where: { id },
+  const findByEmail = async (email: string) => {
+    const user = await prisma.users.findUnique({
+      where: { email },
       select: {
         id: true,
         username: true,
@@ -37,26 +31,23 @@ export function userRepository(instance: FastifyInstance): UserRepository {
         bio: true,
         lastSeen: true,
         createdAt: true,
-        avatars: {
-          where: { isPrimary: true },
-          take: 1,
-          select: {
-            id: true,
-            avatarUrl: true,
-            isPrimary: true,
-            createdAt: true,
-          },
-        },
       },
     });
     return user;
   };
 
-  const findByIdWithAvatars = async (
-    id: string,
-  ): Promise<PublicUserWithAvatars | null> => {
-    const user = prisma.users.findUnique({
-      where: { id },
+  // --------- создание -----------
+
+  const create = async (data: CreateUserInput) => {
+    const user = prisma.users.create({
+      data: {
+        username: data.username,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        passwordHash: data.passwordHash,
+        lastSeen: new Date(),
+      },
       select: {
         id: true,
         username: true,
@@ -81,101 +72,10 @@ export function userRepository(instance: FastifyInstance): UserRepository {
     return user;
   };
 
-  // const findByEmail = async (email: string) => {
-  //   const user = prisma.users.findUnique({
-  //     where: { email },
-  //     select: {
-  //       id: true,
-  //       username: true,
-  //       email: true,
-  //       passwordHash: true,
-  //       globalRole: true,
-  //     },
-  //   });
-  //   return user;
-  // };
-
-  // const findByUsername = async (username: string) => {
-  //   return prisma.users.findUnique({
-  //     where: { username },
-  //     select: {
-  //       id: true,
-  //       username: true,
-  //       firstName: true,
-  //       lastName: true,
-  //       bio: true,
-  //       lastSeen: true,
-  //       createdAt: true,
-  //     },
-  //   });
-  // };
-
-  const findManyByUsernameWithPrimaryAvatar = async (
-    usernamePattern: string,
-  ): Promise<PublicUserWithAvatars[]> => {
-    const users = prisma.users.findMany({
-      where: {
-        username: {
-          contains: usernamePattern,
-          mode: "insensitive",
-        },
-      },
-      select: {
-        id: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        bio: true,
-        lastSeen: true,
-        createdAt: true,
-        avatars: {
-          where: { isPrimary: true },
-          take: 1,
-          select: {
-            id: true,
-            avatarUrl: true,
-            isPrimary: true,
-            createdAt: true,
-          },
-        },
-      },
-      take: 10,
-    });
-    return users;
-  };
-
-  // --------- создание -----------
-
-  const create = async (data: CreateUserInput): Promise<PublicUser> => {
-    const user = prisma.users.create({
-      data: {
-        username: data.username,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        passwordHash: data.passwordHash,
-        lastSeen: new Date(),
-      },
-      select: {
-        id: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        bio: true,
-        lastSeen: true,
-        createdAt: true,
-      },
-    });
-    return user;
-  };
-
   // ------ обновление -------
 
-  const update = async (
-    id: string,
-    data: CreateUserInput,
-  ): Promise<PublicUser> => {
-    const user = prisma.users.update({
+  const updateProfile = async (id: string, data: UpdateUserProfileInput) => {
+    const user = await prisma.users.update({
       where: { id },
       data: {
         ...data,
@@ -192,6 +92,19 @@ export function userRepository(instance: FastifyInstance): UserRepository {
       },
     });
     return user;
+  };
+
+  const updatePassword = async (
+    id: string,
+    newPasswordHash: string,
+  ): Promise<void> => {
+    await prisma.users.update({
+      where: { id },
+      data: {
+        passwordHash: newPasswordHash,
+        updatedAt: new Date(),
+      },
+    });
   };
 
   const updateLastSeen = async (id: string): Promise<void> => {
@@ -212,87 +125,37 @@ export function userRepository(instance: FastifyInstance): UserRepository {
 
   // -------- проверки ---------
 
+  const existsById = async (id: string): Promise<boolean> => {
+    const user = await prisma.users.findUnique({
+      where: { id },
+    });
+    return user !== null;
+  };
+
   const existsByUsername = async (username: string): Promise<boolean> => {
-    const count = await prisma.users.count({
+    const user = await prisma.users.findUnique({
       where: { username },
     });
-    return count > 0;
+    return user !== null;
   };
 
   const existsByEmail = async (email: string): Promise<boolean> => {
-    const count = await prisma.users.count({
+    const user = await prisma.users.findUnique({
       where: { email },
     });
-    return count > 0;
-  };
-
-  // ------ аватары --------
-
-  const addAvatar = async (
-    userId: string,
-    avatarUrl: string,
-  ): Promise<Avatar> => {
-    await prisma.avatars.updateMany({
-      where: { userId, isPrimary: true },
-      data: { isPrimary: false },
-    });
-
-    const newAvatar = await prisma.avatars.create({
-      data: {
-        userId,
-        avatarUrl,
-        isPrimary: true,
-        entityType: "user",
-      },
-      select: {
-        id: true,
-        avatarUrl: true,
-        isPrimary: true,
-        createdAt: true,
-      },
-    });
-    return newAvatar;
-  };
-
-  const setPrimaryAvatar = async (
-    userId: string,
-    avatarId: string,
-  ): Promise<void> => {
-    await prisma.$transaction([
-      prisma.avatars.updateMany({
-        where: { userId, isPrimary: true },
-        data: { isPrimary: false },
-      }),
-
-      prisma.avatars.update({
-        where: { userId, id: avatarId },
-        data: { isPrimary: true },
-      }),
-    ]);
-  };
-
-  const deleteAvatar = async (
-    avatarId: string,
-    userId: string,
-  ): Promise<void> => {
-    await prisma.avatars.delete({
-      where: { id: avatarId, userId },
-    });
+    return user !== null;
   };
 
   return {
     findById,
-    findByIdWithPrimaryAvatar,
-    findByIdWithAvatars,
-    findManyByUsernameWithPrimaryAvatar,
+    findByEmail,
     create,
-    update,
+    updateProfile,
+    updatePassword,
     updateLastSeen,
     banUser,
+    existsById,
     existsByUsername,
     existsByEmail,
-    addAvatar,
-    setPrimaryAvatar,
-    deleteAvatar,
   };
 }
