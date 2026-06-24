@@ -45,31 +45,31 @@ model ChannelSettings {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model ChatParticipants {
-  id                  String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
   chatId              String   @map("chat_id") @db.Uuid
   userId              String   @map("user_id") @db.Uuid
   role                String   @default("member") @db.VarChar(20)
   joinedAt            DateTime @default(now()) @map("joined_at") @db.Timestamp(6)
   lastReadMessageTime DateTime @default(now()) @map("last_read_message_time") @db.Timestamp(6)
-  chats               Chats    @relation(fields: [chatId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users               Users    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  chat                Chats    @relation(fields: [chatId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user                Users    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
+  @@id([chatId, userId])
   @@map("chat_participants")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model Chats {
-  id                String             @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  type              String             @default("private") @db.VarChar(20)
-  title             String?            @db.VarChar(50)
-  createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt         DateTime           @default(now()) @map("updated_at") @db.Timestamp(6)
-  avatars           Avatars[]
-  channel_settings  ChannelSettings?
-  chat_participants ChatParticipants[]
-  invite_links      InviteLinks[]
-  messages          Messages[]
-  reports           Reports[]
+  id               String             @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  type             String             @default("private") @db.VarChar(20)
+  title            String?            @db.VarChar(50)
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt        DateTime           @default(now()) @map("updated_at") @db.Timestamp(6)
+  avatars          Avatars[]
+  channelSettings  ChannelSettings?
+  chatParticipants ChatParticipants[]
+  invite_links     InviteLinks[]
+  messages         Messages[]
+  reports          Reports[]
 
   @@map("chats")
 }
@@ -97,18 +97,21 @@ model MessageReactions {
 }
 
 model Messages {
-  id                String             @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  chatId            String?            @map("chat_id") @db.Uuid
-  userId            String?            @map("user_id") @db.Uuid
-  text              String?
-  replyToId         String?            @map("reply_to_id") @db.Uuid
-  isDeleted         Boolean            @default(false) @map("is_deleted")
-  createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamp(6)
-  editedAt          DateTime           @default(now()) @map("edited_at") @db.Timestamp(6)
-  attachmenst       Attachmensts[]
-  message_reactions MessageReactions[]
-  chats             Chats?             @relation(fields: [chatId], references: [id], onUpdate: NoAction)
-  users             Users?             @relation(fields: [userId], references: [id], onUpdate: NoAction)
+  id               String             @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  chatId           String?            @map("chat_id") @db.Uuid
+  userId           String?            @map("user_id") @db.Uuid
+  text             String?
+  replyToId        String?            @map("reply_to_id") @db.Uuid
+  isDeleted        Boolean            @default(false) @map("is_deleted")
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp(6)
+  editedAt         DateTime           @default(now()) @map("edited_at") @db.Timestamp(6)
+  attachments      Attachmensts[]
+  messageReactions MessageReactions[]
+  chat             Chats?             @relation(fields: [chatId], references: [id], onUpdate: NoAction)
+  user             Users?             @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  replyTo Messages?  @relation("ReplyRelation", fields: [replyToId], references: [id], onUpdate: NoAction)
+  replies Messages[] @relation("ReplyRelation")
 
   @@map("messages")
 }

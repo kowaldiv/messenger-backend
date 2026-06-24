@@ -30,7 +30,7 @@ create table
   chats (
     id UUID primary key default uuidv7 (),
     type varchar(20) not null default 'private' check (type in ('private', 'group', 'channel')),
-    title varchar(50),
+    title varchar(50) not null,
     created_at timestamp not null default NOW (),
     updated_at timestamp not null default NOW ()
   );
@@ -55,12 +55,12 @@ create table
 
 create table
   chat_participants (
-    id UUID primary key default uuidv7 (),
     chat_id UUID not null,
     user_id UUID not null,
     role varchar(20) not null default 'member' check (role in ('member', 'moderator', 'owner')),
     joined_at timestamp not null default NOW (),
     last_read_message_time timestamp not null default NOW (),
+    primary key (chat_id, user_id),
     foreign key (chat_id) references chats (id) on delete cascade,
     foreign key (user_id) references users (id) on delete cascade
   );

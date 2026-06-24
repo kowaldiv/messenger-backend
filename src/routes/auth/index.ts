@@ -1,27 +1,6 @@
 import { type FastifyPluginAsync } from "fastify";
-import { userRepository } from "../../repositories/user.repository.js";
-import { authController } from "../../controllers/auth.controller.js";
-import { authService } from "../../service/auth.service.js";
-import { tokenRepository } from "../../repositories/token.repository.js";
-import { authRepository } from "../../repositories/auth.repositofy.js";
-import { userQueryRepository } from "../../repositories/userQuery.repository.js";
 
 const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
-  console.log("✅ User routes being registered!"); // ← Добавьте лог
-
-  const userRepo = userRepository(fastify);
-  const userQueryRepo = userQueryRepository(fastify);
-  const tokenRepo = tokenRepository(fastify);
-  const authRepo = authRepository(fastify);
-  const service = authService(
-    userRepo,
-    userQueryRepo,
-    tokenRepo,
-    authRepo,
-    fastify,
-  );
-  const controller = authController(service);
-
   fastify.post(
     "/register",
     {
@@ -39,7 +18,7 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         },
       },
     },
-    controller.register,
+    fastify.controllers.auth.register,
   );
 
   fastify.post(
@@ -56,7 +35,7 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         },
       },
     },
-    controller.login,
+    fastify.controllers.auth.login,
   );
 
   fastify.post(
@@ -72,7 +51,7 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         },
       },
     },
-    controller.forgotPassword,
+    fastify.controllers.auth.forgotPassword,
   );
 
   fastify.post(
@@ -89,17 +68,17 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         },
       },
     },
-    controller.resetPassword,
+    fastify.controllers.auth.resetPassword,
   );
 
-  fastify.get("/refresh-token", controller.refreshToken);
+  fastify.get("/refresh-token", fastify.controllers.auth.refreshToken);
 
-  fastify.get("/logout", controller.logout);
+  fastify.get("/logout", fastify.controllers.auth.logout);
 
   fastify.get(
     "/sessions",
     { preHandler: fastify.authenticate },
-    controller.getSession,
+    fastify.controllers.auth.getSession,
   );
 
   fastify.post(
@@ -116,7 +95,7 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       },
       preHandler: [fastify.authenticate],
     },
-    controller.revokeSession,
+    fastify.controllers.auth.revokeSession,
   );
 };
 

@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { AvatarService } from "../service/interface.js";
 import { AppError } from "../errors/index.js";
+import { AvatarService } from "../service/interfaces/avatar.service.interface.js";
 
 export function avatarController(avatarService: AvatarService) {
   const uploadUserAvatar = async (
@@ -29,10 +29,7 @@ export function avatarController(avatarService: AvatarService) {
           filename: data.filename,
         },
       });
-      return reply.status(201).send({
-        success: true,
-        data: avatar,
-      });
+      return reply.status(201).send(avatar);
     } catch (error) {
       console.error("Upload avatar error", error);
       return reply.status(500).send({
@@ -70,7 +67,7 @@ export function avatarController(avatarService: AvatarService) {
   ) => {
     try {
       const userId = request.currentUser.userId;
-      const { chatId } = request.params as any;
+      const { chatId } = request.params as { chatId: string };
 
       const data = await request.file();
 
@@ -91,10 +88,7 @@ export function avatarController(avatarService: AvatarService) {
           filename: data.filename,
         },
       });
-      return reply.status(201).send({
-        success: true,
-        data: avatar,
-      });
+      return reply.status(201).send(avatar);
     } catch (error) {
       console.error("Upload avatar error", error);
       return reply.status(500).send({
@@ -109,7 +103,7 @@ export function avatarController(avatarService: AvatarService) {
     reply: FastifyReply,
   ) => {
     const userId = request.currentUser.userId;
-    const { chatId } = request.params as any;
+    const { chatId } = request.params as { chatId: string };
     const { avatarId } = request.params as { avatarId: string };
 
     await avatarService.setPrimaryChatAvatar(userId, chatId, avatarId);
@@ -128,6 +122,16 @@ export function avatarController(avatarService: AvatarService) {
     return reply.status(200).send();
   };
 
+  const getAvatars = async (request: FastifyRequest, reply: FastifyReply) => {
+    const { entityType, entityId } = request.params as {
+      entityType: "user" | "chat";
+      entityId: string;
+    };
+
+    const avatars = await avatarService.getAvatars(entityType, entityId);
+    return reply.status(200).send(avatars);
+  };
+
   return {
     uploadUserAvatar,
     setPrimaryUserAvatar,
@@ -135,5 +139,6 @@ export function avatarController(avatarService: AvatarService) {
     uploadChatAvatar,
     setPrimaryChatAvatar,
     deleteChatAvatar,
+    getAvatars,
   };
 }

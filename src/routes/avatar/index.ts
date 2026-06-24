@@ -1,23 +1,12 @@
 import { type FastifyPluginAsync } from "fastify";
-import { avatarRepository } from "../../repositories/avatar.repository.js";
-import { avatarController } from "../../controllers/avatar.controller.js";
-import { avatarService } from "../../service/avatar.service.js";
-import { s3StorageService } from "../../service/implementations/storage.service.js";
 
 const avatar: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
-  console.log("✅ Avatar routes being registered!"); // ← Добавьте лог
-
-  const avatarRepo = avatarRepository(fastify);
-  const StorageService = s3StorageService();
-  const service = avatarService(avatarRepo, StorageService);
-  const controller = avatarController(service);
-
   // ---------- пользователи ------------
 
   fastify.post(
     "/uploadUserAvatar",
     { preHandler: [fastify.authenticate] },
-    controller.uploadUserAvatar,
+    fastify.controllers.avatar.uploadUserAvatar,
   );
 
   fastify.get(
@@ -34,7 +23,7 @@ const avatar: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         },
       },
     },
-    controller.setPrimaryUserAvatar,
+    fastify.controllers.avatar.setPrimaryUserAvatar,
   );
 
   fastify.get(
@@ -51,7 +40,7 @@ const avatar: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         },
       },
     },
-    controller.deleteUserAvatar,
+    fastify.controllers.avatar.deleteUserAvatar,
   );
 
   // ------------- чаты ----------------
@@ -70,7 +59,7 @@ const avatar: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         },
       },
     },
-    controller.uploadChatAvatar,
+    fastify.controllers.avatar.uploadChatAvatar,
   );
 
   fastify.get(
@@ -88,7 +77,7 @@ const avatar: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         },
       },
     },
-    controller.setPrimaryChatAvatar,
+    fastify.controllers.avatar.setPrimaryChatAvatar,
   );
 
   fastify.get(
@@ -106,7 +95,28 @@ const avatar: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         },
       },
     },
-    controller.deleteChatAvatar,
+    fastify.controllers.avatar.deleteChatAvatar,
+  );
+
+  fastify.get(
+    "/:entityType/:entityId/avatars",
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        params: {
+          type: "object",
+          required: ["entityType", "entityId"],
+          properties: {
+            entityType: {
+              type: "string",
+              enum: ["user", "chat"],
+            },
+            entityId: { type: "string" },
+          },
+        },
+      },
+    },
+    fastify.controllers.avatar.getAvatars,
   );
 };
 

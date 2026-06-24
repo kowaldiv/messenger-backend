@@ -1,11 +1,16 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { AuthService } from "../service/interface.js";
 import { UnauthorizedError } from "../errors/index.js";
+import { AuthService } from "../service/interfaces/auth.service.interface.js";
 
 export function authController(authService: AuthService) {
   const register = async (request: FastifyRequest, reply: FastifyReply) => {
-    const { email, password, username, firstName, lastName } =
-      request.body as any;
+    const { email, password, username, firstName, lastName } = request.body as {
+      email: string;
+      password: string;
+      username: string;
+      firstName: string;
+      lastName: string;
+    };
     const { user, refreshToken, accessToken } = await authService.register({
       email,
       password,
@@ -13,25 +18,28 @@ export function authController(authService: AuthService) {
       firstName,
       lastName,
     });
-    reply.setCookie("token", accessToken, {
+    reply.setCookie("access_token", accessToken, {
       httpOnly: true,
       secure: true,
       sameSite: true,
-      path: '/',
+      path: "/",
       maxAge: 1 * 60 * 60,
     });
     reply.setCookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: true,
-      path: '/',
+      path: "/",
       maxAge: 7 * 24 * 60 * 60,
     });
     return reply.status(201).send({ user });
   };
 
   const login = async (request: FastifyRequest, reply: FastifyReply) => {
-    const { email, password } = request.body as any;
+    const { email, password } = request.body as {
+      email: string;
+      password: string;
+    };
     const { user, refreshToken, accessToken } = await authService.login({
       email,
       password,
@@ -40,17 +48,17 @@ export function authController(authService: AuthService) {
       httpOnly: true,
       secure: true,
       sameSite: true,
-      path: '/',
+      path: "/",
       maxAge: 1 * 60 * 60,
     });
     reply.setCookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: true,
-      path: '/',
+      path: "/",
       maxAge: 7 * 24 * 60 * 60,
     });
-    return reply.status(201).send({ user });
+    return reply.status(200).send({ user });
   };
 
   const forgotPassword = async (
@@ -66,7 +74,10 @@ export function authController(authService: AuthService) {
     request: FastifyRequest,
     reply: FastifyReply,
   ) => {
-    const { token, newPassword } = request.body as any;
+    const { token, newPassword } = request.body as {
+      token: string;
+      newPassword: string;
+    };
     await authService.resetPassword({ token, newPassword });
     return reply.status(200).send();
   };
@@ -80,14 +91,14 @@ export function authController(authService: AuthService) {
       httpOnly: true,
       secure: true,
       sameSite: true,
-      path: '/',
+      path: "/",
       maxAge: 1 * 60 * 60,
     });
     reply.setCookie("refresh_token", newRefreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: true,
-      path: '/',
+      path: "/",
       maxAge: 7 * 24 * 60 * 60,
     });
   };
@@ -113,7 +124,7 @@ export function authController(authService: AuthService) {
     request: FastifyRequest,
     reply: FastifyReply,
   ) => {
-    const { tokenId } = request.body as any;
+    const { tokenId } = request.body as { tokenId: string };
     const userId = request.currentUser.userId;
 
     await authService.revokeSession(tokenId, userId);

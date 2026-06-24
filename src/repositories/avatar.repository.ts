@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { AvatarRepository } from "./interfaces/avatar.repository.interface.js";
 import { Prisma } from "../generated/prisma/browser.js";
+import { avatarSelect } from "./prisma/selects/user.selects.js";
 
 export function avatarRepository(instance: FastifyInstance): AvatarRepository {
   const prisma = instance.prisma;
@@ -17,12 +18,7 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
         ...whereCondition,
         id: avatarId,
       },
-      select: {
-        id: true,
-        avatarUrl: true,
-        isPrimary: true,
-        createdAt: true,
-      },
+      select: avatarSelect
     });
     return avatar;
   };
@@ -34,12 +30,7 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
       where: {
         ...whereCondition,
       },
-      select: {
-        id: true,
-        avatarUrl: true,
-        isPrimary: true,
-        createdAt: true,
-      },
+      select: avatarSelect
     });
     return avatar;
   };
@@ -68,12 +59,7 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
         isPrimary: true,
         entityType: "user",
       },
-      select: {
-        id: true,
-        avatarUrl: true,
-        isPrimary: true,
-        createdAt: true,
-      },
+      select: avatarSelect
     });
     return newAvatar;
   };
@@ -143,26 +129,11 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
     await prisma.$transaction(operations);
   };
 
-  const ensureUserIsChatOwner = async (userId: string, chatId: string) => {
-    const participant = await prisma.chatParticipants.findFirst({
-      where: {
-        chatId,
-        userId,
-      },
-    });
-    if (participant && participant.role === "owner") {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
   return {
     findAvatar,
     findAvatars,
     addAvatar,
     setPrimaryAvatar,
     deleteAvatar,
-    ensureUserIsChatOwner,
   };
 }

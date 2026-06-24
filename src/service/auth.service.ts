@@ -4,13 +4,14 @@ import {
   UnauthorizedError,
 } from "../errors/index.js";
 import bcrypt from "bcrypt";
-import { AuthService } from "./interface.js";
 import { FastifyInstance } from "fastify";
 import { config } from "../config/index.js";
 import { UserRepository } from "../repositories/interfaces/user.repository.interface.js";
 import { UserQueryRepository } from "../repositories/interfaces/userQuery.repository.interface.js";
 import { TokenRepository } from "../repositories/interfaces/token.repository.interface.js";
 import { AuthRepository } from "../repositories/interfaces/auth.repository.interface.js";
+import { AuthService } from "./interfaces/auth.service.interface.js";
+import * as crypto from "crypto";
 
 export function authService(
   userRepository: UserRepository,
@@ -48,12 +49,14 @@ export function authService(
       lastName,
     });
     //создаем токены
+    const nonce = crypto.randomBytes(16).toString("hex");
     const accessToken = instance.jwt.sign(
-      { userId: user.id },
+      { userId: user.id, nonce: nonce },
       { expiresIn: `${config.ACCESS_TOKEN_EXPIRES_MIN}m` },
     );
+    const refreshNonce = crypto.randomBytes(16).toString("hex");
     const refreshToken = instance.jwt.sign(
-      { userId: user.id },
+      { userId: user.id, nonce: refreshNonce },
       { expiresIn: `${config.REFRESH_TOKEN_EXPIRES_DAYS}d` },
     );
     const expiresAt = new Date();
@@ -94,12 +97,14 @@ export function authService(
     );
     if (!user) throw new Error("User not found after authentication");
     // создаем токены
+    const nonce = crypto.randomBytes(16).toString("hex");
     const accessToken = instance.jwt.sign(
-      { userId: user.id },
+      { userId: user.id, nonce: nonce },
       { expiresIn: `${config.ACCESS_TOKEN_EXPIRES_MIN}m` },
     );
+    const refreshNonce = crypto.randomBytes(16).toString("hex");
     const refreshToken = instance.jwt.sign(
-      { userId: userWithCredentials.id },
+      { userId: userWithCredentials.id, nonce: refreshNonce },
       { expiresIn: `${config.REFRESH_TOKEN_EXPIRES_DAYS}d` },
     );
     const expiresAt = new Date();
@@ -121,20 +126,21 @@ export function authService(
     // если пользователя нет то выходим
     if (!user) return;
     // создаем токен и сохраняем
+    const nonce = crypto.randomBytes(16).toString("hex");
     const token = instance.jwt.sign(
-      { userId: user?.id },
+      { userId: user?.id, nonce: nonce },
       { expiresIn: `${config.RESET_TOKEN_EXPIRES_HOURS}h` },
     );
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + config.RESET_TOKEN_EXPIRES_HOURS);
-    const resetToken = await tokenRepository.createToken({
+    await tokenRepository.createToken({ // const resetToken = 
       userId: user.id,
       token,
       tokenType: "reset_password",
       fingerprint: "",
       expiresAt,
     });
-    console.log(resetToken); // удалить потом
+    // console.log(resetToken); // удалить потом (сделал только для того чтоб получить токен и проверить работает ли востановление пароля)
     // и отправляем пользователю на почту ссылку для востановления
     // const resetLink = `https://мой-сайт/reset-password/${token}`
     // await sendEmail()
@@ -162,15 +168,23 @@ export function authService(
     const validToken = await tokenRepository.isTokenValidByToken(refreshToken);
     if (!validToken) throw new UnauthorizedError("INVALID_REFRESH_TOKEN");
     // создаем access token и новый refresh token
-    const accessToken = instance.jwt.sign({ userId: validToken.userId });
-    const newRefreshToken = instance.jwt.sign({ userId: validToken.userId });
+    const nonce = crypto.randomBytes(16).toString("hex");
+    const accessToken = instance.jwt.sign(
+      { userId: validToken.id, nonce: nonce },
+      { expiresIn: `${config.RESET_TOKEN_EXPIRES_HOURS}h` },
+    );
+    const refreshNonce = crypto.randomBytes(16).toString("hex");
+    const newRefreshToken = instance.jwt.sign(
+      { userId: validToken.id, nonce: refreshNonce },
+      { expiresIn: `${config.RESET_TOKEN_EXPIRES_HOURS}h` },
+    );
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + config.REFRESH_TOKEN_EXPIRES_DAYS);
     await tokenRepository.createToken({
       userId: validToken.userId,
       token: newRefreshToken,
       tokenType: "refresh",
-      fingerprint: "",
+      fingerprint: "test",
       expiresAt,
     });
     // удаляем старый токен

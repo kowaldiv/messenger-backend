@@ -5,12 +5,17 @@ import {
   ValidationError,
 } from "../errors/index.js";
 import { AvatarRepository } from "../repositories/interfaces/avatar.repository.interface.js";
-import { AvatarService, uploadAvatarInput } from "./interface.js";
-import { StorageService } from "./implementations/storage.service.js";
+import {
+  AvatarService,
+  uploadAvatarInput,
+} from "./interfaces/avatar.service.interface.js";
+import { ChatRepository } from "../repositories/interfaces/chat.repository.interface.js";
+import { StorageRepository } from "../repositories/implementations/storage.service.js";
 
 export function avatarService(
   avatarRepository: AvatarRepository,
-  storageService: StorageService,
+  chatRepository: ChatRepository,
+  storageRepository: StorageRepository,
 ): AvatarService {
   const validateFile = (file: uploadAvatarInput["file"]) => {
     // разрешенные типы аватаров
@@ -49,11 +54,11 @@ export function avatarService(
     // получаем файл, проверяем, оптимизируем
     const { file } = input;
     validateFile(file);
-    // отправляем в сервис чтоб он сохранился 
+    // отправляем в сервис чтоб он сохранился
     const optimizedBuffer = await optimizeImage(file.buffer);
     const fileName = `${entityId}-${new Date()}`;
     const folder = `users/${entityId}/avatars`;
-    const avatarUrl = await storageService.uploadFile(
+    const avatarUrl = await storageRepository.uploadFile(
       optimizedBuffer,
       fileName,
       folder,
@@ -87,7 +92,7 @@ export function avatarService(
       avatarId,
     );
     if (!avatar) throw new NotFoundError("AVATAR_NOT_FOUND");
-    // удаляем у пользователя эту аватарку 
+    // удаляем у пользователя эту аватарку
     await avatarRepository.deleteAvatar("user", entityId, avatarId);
   };
 
@@ -97,7 +102,7 @@ export function avatarService(
     input: uploadAvatarInput,
   ) => {
     // проверяем что пользователь админ в этом чате чтоб менять аватарки
-    const isUserChatOwner = avatarRepository.ensureUserIsChatOwner(
+    const isUserChatOwner = chatRepository.ensureUserIsChatOwner(
       userId,
       chatId,
     );
@@ -108,10 +113,10 @@ export function avatarService(
     const { file } = input;
     validateFile(file);
     const optimizedBuffer = await optimizeImage(file.buffer);
-    // отправляем в сервис чтоб он сохранился 
+    // отправляем в сервис чтоб он сохранился
     const fileName = `${chatId}-${new Date()}`;
     const folder = `chats/${chatId}/avatars`;
-    const avatarUrl = await storageService.uploadFile(
+    const avatarUrl = await storageRepository.uploadFile(
       optimizedBuffer,
       fileName,
       folder,
@@ -127,7 +132,7 @@ export function avatarService(
     avatarId: string,
   ) => {
     // проверяем что пользователь админ в этом чате чтоб менять аватарки
-    const isUserChatOwner = avatarRepository.ensureUserIsChatOwner(
+    const isUserChatOwner = chatRepository.ensureUserIsChatOwner(
       userId,
       chatId,
     );
@@ -147,7 +152,7 @@ export function avatarService(
     avatarId: string,
   ) => {
     // проверяем что пользователь админ в этом чате чтоб менять аватарки
-    const isUserChatOwner = avatarRepository.ensureUserIsChatOwner(
+    const isUserChatOwner = chatRepository.ensureUserIsChatOwner(
       userId,
       chatId,
     );
@@ -157,12 +162,12 @@ export function avatarService(
     // проверяем существует ли этот аватар у чата
     const avatar = await avatarRepository.findAvatar("chat", chatId, avatarId);
     if (!avatar) throw new NotFoundError("AVATAR_NOT_FOUND");
-    // удаляем у чата эту аватарку 
+    // удаляем у чата эту аватарку
     await avatarRepository.deleteAvatar("chat", chatId, avatarId);
   };
 
   const getAvatars = async (entityType: "user" | "chat", entityId: string) => {
-    // получаем все аватарки у сущности 
+    // получаем все аватарки у сущности
     const avatars = await avatarRepository.findAvatars(entityType, entityId);
     return avatars;
   };
