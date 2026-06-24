@@ -32,7 +32,7 @@ export function authController(authService: AuthService) {
       path: "/",
       maxAge: 7 * 24 * 60 * 60,
     });
-    return reply.status(201).send({ user });
+    return reply.status(201).send(user);
   };
 
   const login = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -58,7 +58,7 @@ export function authController(authService: AuthService) {
       path: "/",
       maxAge: 7 * 24 * 60 * 60,
     });
-    return reply.status(200).send({ user });
+    return reply.status(200).send(user);
   };
 
   const forgotPassword = async (

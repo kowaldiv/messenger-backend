@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import * as assert from "node:assert";
-import { createTestUser } from "../utils/test-helpers.js";
+import { createTestUser } from "../../utils/test-helpers.js";
 
 export async function chatTest(app: any) {
   await test("Chats", async () => {

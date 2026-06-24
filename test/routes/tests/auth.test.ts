@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import * as assert from "node:assert";
-import { createTestUser, registerTestUser } from "../utils/test-helpers.js";
+import { createTestUser, registerTestUser } from "../../utils/test-helpers.js";
 
 export async function authTest(app: any) {
   await test("Auth", async () => {
@@ -15,7 +15,7 @@ export async function authTest(app: any) {
 
       assert.equal(res.statusCode, 201);
       const data = JSON.parse(res.payload);
-      assert.ok(data.user);
+      assert.ok(data);
       const cookies = res.cookies;
       const accessTokenCookie = cookies.find(
         (c: any) => c.name === "access_token",

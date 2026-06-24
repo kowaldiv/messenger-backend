@@ -5,7 +5,7 @@ import {
   bufferToStream,
   createTestImageBuffer,
   createTestUser,
-} from "../utils/test-helpers.js";
+} from "../../utils/test-helpers.js";
 
 export async function avatarTest(app: any) {
   await test("Avatar", async (t) => {
