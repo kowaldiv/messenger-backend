@@ -6,10 +6,9 @@ export const avatarSelect = {
   avatarUrl: true,
   isPrimary: true,
   createdAt: true,
-} satisfies Prisma.AvatarsSelect;
+} satisfies Prisma.AvatarSelect;
 
-// Базовый select для пользователей (публичные данные)
-export const publicUserSelect = {
+export const userSelect = {
   id: true,
   username: true,
   firstName: true,
@@ -17,10 +16,29 @@ export const publicUserSelect = {
   bio: true,
   lastSeen: true,
   createdAt: true,
+} satisfies Prisma.UserSelect;
+
+// Базовый select для пользователей (публичные данные)
+export const publicUserSelect = {
+  ...userSelect,
   avatars: {
     select: avatarSelect,
     orderBy: {
       isPrimary: "desc" as const,
     },
   },
-} satisfies Prisma.UsersSelect;
+} satisfies Prisma.UserSelect;
+
+export const publicUserWithOneAvatarSelect = {
+  ...userSelect,
+  avatars: {
+    where: { isPrimary: true },
+    take: 1,
+    select: {
+      id: true,
+      avatarUrl: true,
+      isPrimary: true,
+      createdAt: true,
+    },
+  },
+} satisfies Prisma.UserSelect;

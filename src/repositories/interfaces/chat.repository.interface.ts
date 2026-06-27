@@ -1,19 +1,15 @@
 import { Avatar } from "./avatar.repository.interface.js";
-import { PublicUserWithAvatars } from "./userQuery.repository.interface.js";
+import { Message } from "./message.repository.interface.js";
+import { PublicUser } from "./userQuery.repository.interface.js";
 
 export type ChatType = "private" | "group" | "channel";
-export interface Chat {
-  id: string;
-  title: string;
-  type: ChatType;
-  createdAt: Date;
-}
 
 export type ParticipantRole = "member" | "moderator" | "owner";
 export interface ChatParticipant {
+  chatId: string;
   role: ParticipantRole;
   lastReadMessageTime: Date;
-  user: PublicUserWithAvatars;
+  user: PublicUser;
 }
 
 export interface CreatePrivateChatDto {
@@ -30,20 +26,19 @@ export interface CreateChannelDto {
   isPrivate: boolean;
 }
 
-export type PublicChat = {
+export interface ChatInfo {
   id: string;
   type: ChatType;
-  title: string | null;
   createdAt: Date;
-} & (
-  | { type: "private" }
-  | { type: "group"; avatars: Avatar[]; chatParticipants: ChatParticipant[] }
-  | {
-      type: "channel";
-      avatars: Avatar[];
-      channelSettings: { description: string | null; isPrivate: boolean };
-    }
-);
+}
+
+export interface Chat extends ChatInfo {
+  title: string;
+  messages: Message[];
+  avatars: Avatar[];
+  channelSettings: { description: string | null; isPrivate: boolean };
+  chatParticipants: ChatParticipant[];
+}
 
 export type CreateChatDto =
   | CreatePrivateChatDto
@@ -51,7 +46,7 @@ export type CreateChatDto =
   | CreateChannelDto;
 
 export interface ChatRepository {
-  create: (data: CreateChatDto) => Promise<PublicChat>;
+  create: (data: CreateChatDto, userId: string) => Promise<Chat>;
   addParticipant: (
     chatId: string,
     userId: string,
@@ -60,7 +55,24 @@ export interface ChatRepository {
   getChatParticipantsIds: (chatId: string) => Promise<string[]>;
   isChatExists(id: string): Promise<boolean>;
   userInChat(userId: string, chatId: string): Promise<ChatParticipant | null>;
-  findById(id: string): Promise<PublicChat | null>
-  findAllUserChats(userId: string): Promise<PublicChat[]>
+  findById(id: string): Promise<ChatInfo | null>;
+  findAllUserChats(userId: string): Promise<Chat[]>;
+  findFullChatById(chatId: string, userId: string): Promise<Chat | null>;
   ensureUserIsChatOwner(userId: string, chatId: string): Promise<boolean>;
 }
+
+// export type PublicChat = {
+//   id: string;
+//   type: ChatType;
+//   title: string | null;
+//   createdAt: Date;
+// } & (
+//   | { type: "private"; chatParticipants: ChatParticipant[] }
+//   | { type: "group"; avatars: Avatar[]; chatParticipants: ChatParticipant[] }
+//   | {
+//       type: "channel";
+//       avatars: Avatar[];
+//       channelSettings: { description: string | null; isPrivate: boolean };
+//       chatParticipants: ChatParticipant[];
+//     }
+// );

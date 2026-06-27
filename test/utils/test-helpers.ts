@@ -68,7 +68,7 @@ export async function registerTestUser(app: any): Promise<{
 }
 
 // Вспомогательная функция для создания тестового чата
-export async function createTestChat(app: any, accessToken: string) {
+export async function createTestChat(app: any, accessToken: string): Promise<string> {
   const chatRes = await app.inject({
     method: "POST",
     url: "/chat/create",

@@ -1,87 +1,83 @@
 import { Socket } from "socket.io";
 import { Server as SocketIOServer } from "socket.io";
-import { ChatService } from "../../service/interfaces/chat.service.interface.js";
 import { MessageService } from "../../service/interfaces/message.service.interface.js";
 import { AppError } from "../../errors/index.js";
+import { joinUserToChat } from "./helpers.js";
 
 export const messageHandler = (
   socket: Socket,
   io: SocketIOServer,
-  chatService: ChatService,
   messageService: MessageService,
 ) => {
-  // Функция для подключения пользователя по userId
-  const joinUserToChat = async (userId: string, chatId: string) => {
-    // Находим все сокеты этого пользователя
-    const sockets = await io.fetchSockets();
-    const userSockets = sockets.filter(
-      (socket) => socket.data.currentUser?.userId === userId,
-    );
-
-    // Подключаем каждый найденный сокет к комнате
-    for (const socket of userSockets) {
-      const roomName = `chat:${chatId}`;
-      await socket.join(roomName);
-      console.log(`User ${userId} joined room: ${roomName}`);
-    }
-
-    return userSockets.length;
-  };
-
-  (socket.on("joinAllChats", async (data) => {
+  socket.on("sendMessage", async (data) => {
     try {
-      const userId = socket.data.currentUser.userId;
+      const userId = socket.data.currentUser?.userId;
+      const { chatIdOrUserId, text } = JSON.parse(data);
 
-      const userChats = await chatService.getAllUserChats(userId);
+      const { message, chatId, isNewChat } = await messageService.create(
+        userId,
+        chatIdOrUserId,
+        text,
+      );
 
-      for (const chat of userChats) {
-        await joinUserToChat(userId, chat.id);
+      if (isNewChat) {
+        await joinUserToChat(io, userId, chatId);
+        await joinUserToChat(io, chatIdOrUserId, chatId);
       }
 
-      socket.emit("joinedAllChats", {
+      io.to(`chat:${chatId}`).emit("newMessage", {
         success: true,
-        chats: userChats.map((chat) => chat.id),
-        count: userChats.length,
+        message,
       });
     } catch (error) {
       console.error(error);
-      socket.emit("error", {
-        message: "Failed to join all chats",
-      });
+      if (error instanceof AppError) {
+        socket.emit("error", {
+          message: error.message || "Failed to send message",
+          code: error.code || "UNKNOWN_ERROR",
+          statusCode: error.statusCode || 500,
+        });
+      } else {
+        socket.emit("error", {
+          message: "Failed to send message",
+        });
+      }
     }
-  }),
-    socket.on("sendMessage", async (data) => {
-      try {
-        const userId = socket.data.currentUser?.userId;
-        const { chatIdOrUserId, text } = JSON.parse(data);
+  });
+  socket.on("invite", async (data) => {
+    try {
+      const userId = socket.data.currentUser?.userId;
+      const { destinationChatId, chatIds } = JSON.parse(data);
 
-        const { message, chatId, isNewChat } = await messageService.create(
-          userId,
-          chatIdOrUserId,
-          text,
-        ); 
+      const messages = await messageService.sendInviteToChat(
+        userId,
+        destinationChatId,
+        chatIds,
+      );
 
+      messages.map(async ({ message, chatId, isNewChat, invitedUserId }) => {
         if (isNewChat) {
-          await joinUserToChat(userId, chatId);
-          await joinUserToChat(chatIdOrUserId, chatId);
+          await joinUserToChat(io, userId, chatId);
+          if (invitedUserId) await joinUserToChat(io, invitedUserId, chatId);
         }
-
         io.to(`chat:${chatId}`).emit("newMessage", {
+          success: true,
           message,
         });
-      } catch (error) {
-        console.error(error);
-        if (error instanceof AppError) {
-          socket.emit("error", {
-            message: error.message || "Failed to send message",
-            code: error.code || "UNKNOWN_ERROR",
-            statusCode: error.statusCode || 500,
-          });
-        } else {
-          socket.emit("error", {
-            message: "Failed to send message",
-          });
-        }
+      }); 
+    } catch (error) {
+      console.error(error);
+      if (error instanceof AppError) {
+        socket.emit("error", {
+          message: error.message || "Failed to send message",
+          code: error.code || "UNKNOWN_ERROR",
+          statusCode: error.statusCode || 500,
+        });
+      } else {
+        socket.emit("error", {
+          message: "Failed to send message",
+        });
       }
-    }));
+    }
+  });
 };

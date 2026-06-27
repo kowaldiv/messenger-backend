@@ -1,7 +1,4 @@
-import type {
-  ChatParticipant,
-  PublicChat,
-} from "../../repositories/interfaces/chat.repository.interface.js";
+import { PublicChat } from "../transformers/chat.transformer.js";
 
 export type CreateChatDto =
   | { type: "channel"; title: string; description?: string; isPrivate: boolean }
@@ -11,13 +8,15 @@ export type CreateChatWithCreator = CreateChatDto & {
   creatorId: string;
 };
 
-export type PublicChatWithParticipants = PublicChat & {
-  chatParticipants: ChatParticipant[];
-};
-
 export interface ChatService {
-  create: (data: CreateChatWithCreator) => Promise<PublicChatWithParticipants>;
-  addParticipant(chatId: string, userId: string): Promise<void>;
+  create: (data: CreateChatWithCreator) => Promise<PublicChat>;
+  joinChat: (
+    userId: string,
+    options: {
+      inviteLinkToken?: string | undefined;
+      chatId?: string | undefined;
+    },
+  ) => Promise<PublicChat>;
   getChatParticipantsIds(chatId: string): Promise<string[]>;
   getAllUserChats(userId: string): Promise<PublicChat[]>;
 }

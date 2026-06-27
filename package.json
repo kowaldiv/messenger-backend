@@ -11,7 +11,7 @@
     "shell-quote": "1.8.4"
   },
   "scripts": {
-    "test": "cls && tsx --test --test-concurrency=1 test/**/*.ts",
+    "test": "cls && tsx --test --test-timeout=3000 test/**/*.ts",
     "start": "npm run build:ts && fastify start -l info dist/app.js",
     "build:ts": "tsc",
     "watch:ts": "tsc -w",

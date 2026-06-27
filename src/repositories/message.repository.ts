@@ -1,68 +1,39 @@
 import { FastifyInstance } from "fastify";
-import { MessageRepository } from "./interfaces/message.repository.interface.js";
-
-export const defaultSelectMessage = {
-  id: true,
-  chatId: true,
-  userId: true,
-  text: true,
-  replyToId: true,
-  createdAt: true,
-  editedAt: true,
-  messageReactions: {
-    select: {
-      id: true,
-      messageId: true,
-      userId: true,
-      emoji: true,
-    },
-  },
-  attachments: {
-    select: {
-      id: true,
-      fileName: true,
-      fileType: true,
-      fileUrl: true,
-      messageId: true,
-      createdAt: true,
-    },
-  },
-  replyTo: {
-    select: {
-      id: true,
-      chatId: true,
-      userId: true,
-      text: true,
-      createdAt: true,
-      editedAt: true,
-      user: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-        },
-      },
-    },
-  },
-};
+import {
+  MessageRepository,
+  Message,
+} from "./interfaces/message.repository.interface.js";
+import { messageSelect } from "./prisma/selects/message.selects.js";
 
 export function messageRepository(
   instance: FastifyInstance,
 ): MessageRepository {
   const prisma = instance.prisma;
 
-  const create = async (
-    userId: string,
-    chatId: string,
-    text: string,
-    replyToId?: string,
-    attachments?: { fileUrl: string; fileType: string; fileName: string }[],
-  ) => {
-    const message = await prisma.messages.create({
+  const create = async ({
+    chatId,
+    userId,
+    type,
+    text,
+    metadata,
+    replyToId,
+    attachments,
+  }: {
+    chatId: string;
+    userId?: string;
+    type: "text" | "invite" | "joined";
+    text?: string;
+    metadata?: any;
+    replyToId?: string;
+    attachments?: { fileUrl: string; fileType: string; fileName: string }[];
+  }) => {
+    const message = await prisma.message.create({
       data: {
         userId,
         chatId,
+        type,
         text,
+        metadata,
         replyToId,
         attachments: {
           createMany: {
@@ -75,9 +46,9 @@ export function messageRepository(
           },
         },
       },
-      select: defaultSelectMessage,
+      select: messageSelect,
     });
-    return message;
+    return message as Message;
   };
 
   return {

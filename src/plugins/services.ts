@@ -3,14 +3,18 @@ import { authService } from "../service/auth.service.js";
 import { avatarService } from "../service/avatar.service.js";
 import { chatService } from "../service/chat.service.js";
 import { messageService } from "../service/message.service.js";
+import { MessageService } from "../service/interfaces/message.service.interface.js";
+import { ChatService } from "../service/interfaces/chat.service.interface.js";
+import { AvatarService } from "../service/interfaces/avatar.service.interface.js";
+import { AuthService } from "../service/interfaces/auth.service.interface.js";
 
 declare module "fastify" {
   interface FastifyInstance {
     services: {
-      auth: ReturnType<typeof authService>;
-      avatar: ReturnType<typeof avatarService>;
-      chat: ReturnType<typeof chatService>;
-      message: ReturnType<typeof messageService>;
+      auth: AuthService;
+      avatar: AvatarService;
+      chat: ChatService;
+      message: MessageService;
     };
   }
 }
@@ -34,12 +38,18 @@ export default fp(
       repositories.storage,
     );
 
-    const chatSvc = chatService(repositories.chat, repositories.user);
+    const chatSvc = chatService(
+      repositories.chat,
+      repositories.user,
+      repositories.inviteLink,
+      repositories.message,
+    );
 
     const messageSvc = messageService(
       repositories.message,
       repositories.chat,
       repositories.user,
+      repositories.inviteLink,
     );
 
     // Декорируем fastify

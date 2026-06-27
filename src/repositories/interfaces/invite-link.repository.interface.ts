@@ -1,9 +1,17 @@
-export interface InviteLink {
+import { Avatar } from "./avatar.repository.interface.js";
+import { ChatInfo } from "./chat.repository.interface.js";
+
+interface InviteLinkChatInfo extends ChatInfo {
+  tilte: string;
+  avatars: Avatar[];
+}
+
+export interface PublicInviteLink {
   id: string;
   token: string;
   expiresAt: Date;
   createdAt: Date;
-  chatId: string;
+  chat: InviteLinkChatInfo;
 }
 
 export interface InviteLinkRepository {
@@ -11,5 +19,6 @@ export interface InviteLinkRepository {
     token: string,
     expiresAt: Date,
     chatId: string,
-  ) => Promise<InviteLink>;
+  ) => Promise<PublicInviteLink>;
+  findBytoken: (token: string) => Promise<PublicInviteLink | null>;
 }

@@ -1,5 +1,7 @@
 import { FastifyInstance } from "fastify";
 import {
+  Chat,
+  ChatInfo,
   ChatParticipant,
   ChatRepository,
   ChatType,
@@ -7,18 +9,17 @@ import {
   CreateChatDto,
   CreateGroupChatDto,
   ParticipantRole,
-  PublicChat,
 } from "./interfaces/chat.repository.interface.js";
 import {
-  chatListSelect,
+  chatInfoSelect,
   chatParticipantSelect,
-  chatSelects,
+  getChatSelect,
 } from "./prisma/selects/chat.selects.js";
 
 export function chatRepository(instance: FastifyInstance): ChatRepository {
   const prisma = instance.prisma;
 
-  const create = async (data: CreateChatDto): Promise<PublicChat> => {
+  const create = async (data: CreateChatDto, userId: string) => {
     const getData = (type: ChatType) => {
       switch (type) {
         case "channel": {
@@ -50,12 +51,12 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
       }
     };
 
-    const result = await prisma.chats.create({
+    const result = await prisma.chat.create({
       data: getData(data.type),
-      select: chatSelects[data.type],
+      select: getChatSelect(userId),
     });
 
-    return result as unknown as PublicChat;
+    return result as unknown as Chat;
   };
 
   const addParticipant = async (
@@ -63,7 +64,7 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     userId: string,
     role: ParticipantRole,
   ) => {
-    const participant = await prisma.chatParticipants.create({
+    const participant = await prisma.chatParticipant.create({
       data: {
         chatId,
         userId,
@@ -71,15 +72,11 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
       },
       select: chatParticipantSelect,
     });
-    return {
-      role: participant.role as ParticipantRole,
-      lastReadMessageTime: participant.lastReadMessageTime,
-      user: participant.user,
-    };
+    return participant as ChatParticipant;
   };
 
   const getChatParticipantsIds = async (chatId: string) => {
-    const participants = await prisma.chatParticipants.findMany({
+    const participants = await prisma.chatParticipant.findMany({
       where: { chatId },
       select: {
         userId: true,
@@ -91,14 +88,14 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
   // ------------- проверки ---------------
 
   const isChatExists = async (id: string): Promise<boolean> => {
-    const chat = await prisma.chats.findUnique({
+    const chat = await prisma.chat.findUnique({
       where: { id },
     });
     return chat !== null;
   };
 
   const userInChat = async (userId: string, chatId: string) => {
-    const participant = await prisma.chatParticipants.findFirst({
+    const participant = await prisma.chatParticipant.findFirst({
       where: {
         chatId,
         userId,
@@ -108,38 +105,24 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     if (!participant) {
       return null;
     }
-    return {
-      role: participant.role as ParticipantRole,
-      lastReadMessageTime: participant.lastReadMessageTime,
-      user: participant.user,
-    } as ChatParticipant;
+    return participant as ChatParticipant;
   };
 
   // ----------- найти чат --------------
 
   const findById = async (id: string) => {
-    const chat = await prisma.chats.findUnique({
+    const chat = await prisma.chat.findUnique({
       where: {
         id,
       },
-      select: {
-        id: true,
-        title: true,
-        type: true,
-        createdAt: true,
-      },
+      select: chatInfoSelect,
     });
     if (!chat) return null;
-    return {
-      id: chat?.id,
-      title: chat?.title,
-      type: chat?.type as ChatType,
-      createdAt: chat?.createdAt,
-    } as PublicChat;
+    return chat as ChatInfo;
   };
 
   const findAllUserChats = async (userId: string) => {
-    const chats = await prisma.chats.findMany({
+    const chats = await prisma.chat.findMany({
       where: {
         chatParticipants: {
           some: {
@@ -147,16 +130,22 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
           },
         },
       },
-      select: chatListSelect,
+      select: getChatSelect(userId),
     });
-    return chats.map((chat) => ({
-      ...chat,
-      type: chat.type as ChatType,
-    })) as PublicChat[];
+    return chats as unknown as Chat[];
+  };
+
+  const findFullChatById = async (chatId: string, userId: string) => {
+    const chat = await prisma.chat.findUnique({
+      where: { id: chatId },
+      select: getChatSelect(userId),
+    });
+    if (!chat) return null;
+    return chat as unknown as Chat;
   };
 
   const ensureUserIsChatOwner = async (userId: string, chatId: string) => {
-    const participant = await prisma.chatParticipants.findFirst({
+    const participant = await prisma.chatParticipant.findFirst({
       where: {
         chatId,
         userId,
@@ -177,6 +166,7 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     userInChat,
     findById,
     findAllUserChats,
+    findFullChatById,
     ensureUserIsChatOwner,
   };
 }

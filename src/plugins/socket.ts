@@ -4,6 +4,7 @@ import { config } from "../config/index.js";
 import { UnauthorizedError } from "../errors/index.js";
 import cookie from "cookie";
 import { messageHandler } from "../socket/handlers/message.handler.js";
+import { chatHandler } from "../socket/handlers/chat.handler.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -61,9 +62,14 @@ export default fp(
       messageHandler(
         socket,
         io,
-        instance.services.chat,
         instance.services.message,
       );
+
+      chatHandler(
+        socket,
+        io,
+        instance.services.chat,
+      )
 
       socket.on("disconnect", () => {
         instance.log.info(`User ${user.chatId} disconnected: ${socket.id}`);

@@ -1,11 +1,11 @@
-export interface Message {
+import { Avatar } from "./avatar.repository.interface.js";
+
+export interface MessageUser {
   id: string;
-  chatId: string | null;
-  userId: string | null;
-  text: string | null;
-  replyToId: string | null;
-  createdAt: Date;
-  editedAt: Date;
+  username: string;
+  firstName: string;
+  lastName: string | null;
+  avatars: Avatar[];
 }
 
 export interface Attachment {
@@ -31,28 +31,31 @@ export interface ReplyTo {
   text: string | null;
   createdAt: Date;
   editedAt: Date;
-  user: {
-    id: string;
-    firstName: string;
-    lastName: string | null;
-  } | null;
+  user: MessageUser | null;
 }
-
-export interface PublicMessage extends Message {
+export interface Message {
+  id: string;
+  chatId: string | null;
+  userId: string | null;
+  text: string | null;
+  type: "text" | "invite" | "joined";
+  metadata: Record<string, unknown>;
+  createdAt: Date;
+  editedAt: Date;
+  user: MessageUser | null;
   attachments: Attachment[];
   messageReactions: MessageReaction[];
+  replyTo: ReplyTo | null;
 }
 
 export interface MessageRepository {
-  create(
-    userId: string,
-    chatId: string,
-    text: string,
-    replyToId?: string,
-    attachments?: {
-      fileUrl: string;
-      fileType: string;
-      fileName: string;
-    }[],
-  ): Promise<PublicMessage>;
+  create(params: {
+    chatId: string;
+    userId?: string;
+    type: "text" | "invite" | "joined";
+    text?: string;
+    metadata?: any;
+    replyToId?: string;
+    attachments?: { fileUrl: string; fileType: string; fileName: string }[];
+  }): Promise<Message>;
 }

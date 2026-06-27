@@ -1,43 +1,67 @@
 import { Prisma } from "../../../generated/prisma/browser.js";
 import { avatarSelect } from "./user.selects.js";
 
+// select пользователья в сообщениях
+const messageUserSelect = {
+  id: true,
+  username: true,
+  firstName: true,
+  lastName: true,
+  avatars: {
+    where: { isPrimary: true },
+    take: 1,
+    select: avatarSelect,
+  },
+} satisfies Prisma.UserSelect;
+
+const messageReactionsSelect = {
+  id: true,
+  messageId: true,
+  userId: true,
+  emoji: true,
+} satisfies Prisma.MessageReactionSelect;
+
+const attachmentsSelect = {
+  id: true,
+  fileName: true,
+  fileType: true,
+  fileUrl: true,
+  messageId: true,
+  createdAt: true,
+} satisfies Prisma.AttachmenstSelect;
+
+const replyToSelect = {
+  id: true,
+  chatId: true,
+  userId: true,
+  text: true,
+  createdAt: true,
+  editedAt: true,
+  user: {
+    select: messageUserSelect,
+  },
+} satisfies Prisma.MessageSelect;
+
 // Базовый select для сообщений
 export const messageSelect = {
   id: true,
   chatId: true,
   userId: true,
+  type: true,
   text: true,
-  replyToId: true,
+  metadata: true,
   createdAt: true,
   editedAt: true,
-  attachments: {
-    select: {
-      id: true,
-      messageId: true,
-      fileUrl: true,
-      fileType: true,
-      fileName: true,
-    },
+  user: {
+    select: messageUserSelect,
   },
   messageReactions: {
-    select: {
-      id: true,
-      messageId: true,
-      userId: true,
-      emoji: true,
-    },
+    select: messageReactionsSelect,
   },
-  user: {
-    select: {
-      id: true,
-      username: true,
-      firstName: true,
-      lastName: true,
-      avatars: {
-        where: { isPrimary: true },
-        take: 1,
-        select: avatarSelect,
-      },
-    },
+  attachments: {
+    select: attachmentsSelect,
   },
-} satisfies Prisma.MessagesSelect;
+  replyTo: {
+    select: replyToSelect,
+  },
+} satisfies Prisma.MessageSelect;

@@ -4,24 +4,29 @@ import { avatarSelect, publicUserSelect } from "./user.selects.js";
 
 // Базовый select для участников чата
 export const chatParticipantSelect = {
+  chatId: true,
   role: true,
   lastReadMessageTime: true,
   user: {
     select: publicUserSelect,
   },
-} satisfies Prisma.ChatParticipantsSelect;
+} satisfies Prisma.ChatParticipantSelect;
 
 // Базовый select для channel settings
 export const channelSettingsSelect = {
   description: true,
   isPrivate: true,
-} satisfies Prisma.ChannelSettingsSelect;
+} satisfies Prisma.ChannelSettingSelect;
 
-// Базовый select для чата (без title)
-export const chatBaseSelect = {
+export const chatInfoSelect = {
   id: true,
   type: true,
   createdAt: true,
+} satisfies Prisma.ChatSelect;
+
+// Базовый select для чата (без title)
+export const chatBaseSelect = {
+  ...chatInfoSelect,
   messages: {
     where: {
       isDeleted: false,
@@ -30,95 +35,105 @@ export const chatBaseSelect = {
     orderBy: {
       createdAt: "desc" as const,
     },
+    take: 1,
   },
-} satisfies Prisma.ChatsSelect;
+} satisfies Prisma.ChatSelect;
 
-// Select для чата с title
-export const chatWithTitleSelect = {
-  ...chatBaseSelect,
-  title: true,
-} satisfies Prisma.ChatsSelect;
-
-// Select для чата с аватарами
-export const chatWithAvatarsSelect = {
-  ...chatWithTitleSelect,
-  avatars: {
-    select: avatarSelect,
-    orderBy: {
-      isPrimary: "desc" as const,
-    },
-  },
-} satisfies Prisma.ChatsSelect;
-
-// Полный select для разных типов чатов
-export const chatSelects = {
-  // Для приватного чата
-  private: {
-    ...chatBaseSelect,
-    chatParticipants: {
-      select: chatParticipantSelect,
-    },
-  } satisfies Prisma.ChatsSelect,
-
-  // Для группового чата
-  group: {
+// chat.selects.ts
+export function getChatSelect(userId: string) {
+  return {
     ...chatBaseSelect,
     title: true,
+    messages: {
+      where: { isDeleted: false },
+      select: messageSelect,
+      orderBy: { createdAt: "desc" as const },
+      take: 1,
+    },
     avatars: {
       select: avatarSelect,
-      orderBy: {
-        isPrimary: "desc" as const,
-      },
-    },
-    chatParticipants: {
-      select: chatParticipantSelect,
-    },
-  } satisfies Prisma.ChatsSelect,
-
-  // Для канала
-  channel: {
-    ...chatBaseSelect,
-    title: true,
-    avatars: {
-      select: avatarSelect,
-      orderBy: {
-        isPrimary: "desc" as const,
-      },
+      orderBy: { isPrimary: "desc" as const },
+      take: 1,
     },
     channelSettings: {
       select: channelSettingsSelect,
     },
-  } satisfies Prisma.ChatsSelect,
-} as const;
-
-// Для списка чатов (без сообщений)
-export const chatListSelect = {
-  id: true,
-  type: true,
-  title: true,
-  createdAt: true,
-  avatars: {
-    where: { isPrimary: true },
-    take: 1,
-    select: avatarSelect,
-  },
-  chatParticipants: {
-    select: {
-      role: true,
-      lastReadMessageTime: true,
-      user: {
-        select: {
-          id: true,
-          username: true,
-          firstName: true,
-          lastName: true,
-          avatars: {
-            where: { isPrimary: true },
-            take: 1,
-            select: avatarSelect,
-          },
-        },
+    // Всего ОДИН участник (не я) для private чатов, чтоб было какую аватарку и firstName и lastName отображать
+    chatParticipants: {
+      where: {
+        userId: { not: userId },
       },
+      select: chatParticipantSelect,
+      take: 1,
     },
-  },
-} satisfies Prisma.ChatsSelect;
+  } satisfies Prisma.ChatSelect;
+}
+
+// Функция для создания селекта с фильтрацией по userId
+// export function getChatSelects(userId: string) {
+//   return {
+//     // Для приватного чата
+//     private: {
+//       ...chatBaseSelect,
+//       chatParticipants: {
+//         where: {
+//           userId: { not: userId },
+//         },
+//         select: {
+//           userId: true,
+//           role: true,
+//           lastReadMessageTime: true,
+//           user: {
+//             select: publicUserSelect,
+//           },
+//         },
+//         take: 1,
+//       },
+//     } satisfies Prisma.ChatSelect,
+
+//     // Для группового чата
+//     group: {
+//       ...chatBaseSelect,
+//       title: true,
+//       avatars: {
+//         select: avatarSelect,
+//         orderBy: {
+//           isPrimary: "desc" as const,
+//         },
+//         take: 1,
+//       },
+//       chatParticipants: {
+//         where: {
+//           userId: {
+//             not: userId,
+//           },
+//         },
+//         select: chatParticipantSelect,
+//       },
+//     } satisfies Prisma.ChatSelect,
+
+//     // Для канала
+//     channel: {
+//       ...chatBaseSelect,
+//       title: true,
+//       avatars: {
+//         select: avatarSelect,
+//         orderBy: {
+//           isPrimary: "desc" as const,
+//         },
+//       },
+//       channelSettings: {
+//         select: channelSettingsSelect,
+//       },
+//       chatParticipants: {
+//         where: {
+//           userId: userId,
+//         },
+//         select: chatParticipantSelect,
+//         take: 1,
+//       },
+
+//       // Для канала тоже можно добавить chatParticipants
+//     } satisfies Prisma.ChatSelect,
+//   } as const;
+// }

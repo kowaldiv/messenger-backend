@@ -15,10 +15,7 @@ export interface PublicTokenInfo {
 
 export interface TokenRepository {
   allSessions(userId: string): Promise<PublicTokenInfo[]>;
-  createToken(data: CreateSessionInput): Promise<{
-    token: string;
-    expiresAt: Date;
-  }>;
+  createToken(data: CreateSessionInput): Promise<PublicTokenInfo>;
   isTokenValidByToken(token: string): Promise<PublicTokenInfo | null>;
   isTokenValidById(id: string): Promise<PublicTokenInfo | null>;
   deleteTokenByToken(token: string): Promise<void>;

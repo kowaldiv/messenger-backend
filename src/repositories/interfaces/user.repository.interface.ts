@@ -1,6 +1,6 @@
-import { PublicUserWithAvatars } from "./userQuery.repository.interface.js";
+import { PublicUser } from "./userQuery.repository.interface.js";
 
-export interface PublicUser {
+export interface User {
   id: string;
   username: string;
   firstName: string;
@@ -26,12 +26,12 @@ export type UpdateUserProfileInput = {
 };
 
 export interface UserRepository {
-  findById(id: string): Promise<PublicUser | null>;
-  findByEmail(email: string): Promise<PublicUser | null>;
+  findById(id: string): Promise<User | null>;
+  findByEmail(email: string): Promise<User | null>;
 
-  create(data: CreateUserInput): Promise<PublicUserWithAvatars>;
+  create(data: CreateUserInput): Promise<PublicUser>;
 
-  updateProfile(id: string, data: UpdateUserProfileInput): Promise<PublicUser>;
+  updateProfile(id: string, data: UpdateUserProfileInput): Promise<User>;
   updatePassword(id: string, newPasswordHash: string): Promise<void>;
   updateLastSeen(id: string): Promise<void>;
 

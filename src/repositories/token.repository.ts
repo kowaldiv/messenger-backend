@@ -1,13 +1,14 @@
 import { FastifyInstance } from "fastify";
 import { TokenRepository } from "./interfaces/token.repository.interface.js";
+import { publicTokenInfoSelect } from "./prisma/selects/token.selects.js";
 
 export function tokenRepository(instance: FastifyInstance): TokenRepository {
   const prisma = instance.prisma;
-  
+
   // -------- токены -----------
 
   const allSessions = async (userId: string) => {
-    const sessions = await prisma.sessions.findMany({
+    const sessions = await prisma.session.findMany({
       where: {
         userId,
         tokenType: "refresh",
@@ -15,12 +16,7 @@ export function tokenRepository(instance: FastifyInstance): TokenRepository {
           gt: new Date(),
         },
       },
-      select: {
-        id: true,
-        userId: true,
-        fingerprint: true,
-        createdAt: true,
-      },
+      select: publicTokenInfoSelect,
     });
     return sessions;
   };
@@ -34,7 +30,7 @@ export function tokenRepository(instance: FastifyInstance): TokenRepository {
     fingerprint: string;
     expiresAt: Date;
   }) => {
-    const session = await prisma.sessions.create({
+    const session = await prisma.session.create({
       data: {
         userId: data.userId,
         token: data.token,
@@ -42,10 +38,7 @@ export function tokenRepository(instance: FastifyInstance): TokenRepository {
         fingerprint: data.fingerprint,
         expiresAt: data.expiresAt,
       },
-      select: {
-        token: true,
-        expiresAt: true,
-      },
+      select: publicTokenInfoSelect,
     });
     return session;
   };
@@ -53,25 +46,27 @@ export function tokenRepository(instance: FastifyInstance): TokenRepository {
   // ---------- валидация ------------
 
   const isTokenValidByToken = async (token: string) => {
-    const session = await prisma.sessions.findUnique({
+    const session = await prisma.session.findUnique({
       where: {
         token: token,
         expiresAt: {
           gt: new Date(),
         },
       },
+      select: publicTokenInfoSelect,
     });
     return session;
   };
 
   const isTokenValidById = async (id: string) => {
-    const session = await prisma.sessions.findUnique({
+    const session = await prisma.session.findUnique({
       where: {
         id: id,
         expiresAt: {
           gt: new Date(),
         },
       },
+      select: publicTokenInfoSelect,
     });
     return session;
   };
@@ -79,13 +74,13 @@ export function tokenRepository(instance: FastifyInstance): TokenRepository {
   // ----------- удалеение ------------
 
   const deleteTokenByToken = async (token: string) => {
-    await prisma.sessions.delete({
+    await prisma.session.delete({
       where: { token },
     });
   };
 
   const deleteTokenById = async (tokenId: string, userId: string) => {
-    await prisma.sessions.delete({
+    await prisma.session.delete({
       where: { id: tokenId, userId },
     });
   };

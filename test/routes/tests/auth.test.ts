@@ -1,9 +1,9 @@
-import { test } from "node:test";
+import { describe, test } from "node:test";
 import * as assert from "node:assert";
 import { createTestUser, registerTestUser } from "../../utils/test-helpers.js";
 
 export async function authTest(app: any) {
-  await test("Auth", async () => {
+  describe("Auth", async () => {
     await test("POST /api/auth/register - success", async () => {
       const testUser = createTestUser();
 

@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { describe, test } from "node:test";
 import * as assert from "node:assert";
 import FormData from "form-data";
 import {
@@ -8,7 +8,7 @@ import {
 } from "../../utils/test-helpers.js";
 
 export async function avatarTest(app: any) {
-  await test("Avatar", async (t) => {
+  describe("Avatar", async (t) => {
     await test("POST /api/avatar/uploadUserAvatar - success", async () => {
       // Регистрируем и логиним пользователя
       const testUser = createTestUser();

@@ -30,7 +30,7 @@ create table
   chats (
     id UUID primary key default uuidv7 (),
     type varchar(20) not null default 'private' check (type in ('private', 'group', 'channel')),
-    title varchar(50) not null,
+    title varchar(50),
     created_at timestamp not null default NOW (),
     updated_at timestamp not null default NOW ()
   );
@@ -104,13 +104,16 @@ create table
     id UUID primary key default uuidv7 (),
     chat_id UUID,
     user_id UUID,
+    type varchar(20) not null default 'text' check (type in ('text', 'invite', 'joined')),
     text text,
     reply_to_id UUID,
     is_deleted boolean not null default false,
+    metadata JSONB default '{}',
     created_at timestamp not null default NOW (),
     edited_at timestamp not null default NOW (),
     foreign key (chat_id) references chats (id) on delete set null,
-    foreign key (user_id) references users (id) on delete set null
+    foreign key (user_id) references users (id) on delete set null,
+    foreign key (reply_to_id) references messages (id) on delete set null
   );
 
 create table

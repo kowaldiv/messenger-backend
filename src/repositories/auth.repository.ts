@@ -5,7 +5,7 @@ export function authRepository(instance: FastifyInstance): AuthRepository {
   const prisma = instance.prisma;
 
   const findByEmailWithCredentials = async (email: string) => {
-    const user = prisma.users.findUnique({
+    const user = prisma.user.findUnique({
       where: { email },
       select: {
         id: true,

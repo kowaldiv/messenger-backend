@@ -1,4 +1,4 @@
-import { PublicMessage } from "../../repositories/interfaces/message.repository.interface.js";
+import { PublicMessage } from "../transformers/message.transformer.js";
 
 export interface MessageService {
   create: (
@@ -12,4 +12,16 @@ export interface MessageService {
       fileName: string;
     }[],
   ) => Promise<{ message: PublicMessage; chatId: string; isNewChat: boolean }>;
+  sendInviteToChat: (
+    userId: string,
+    destinationChatId: string,
+    chatIds: string[],
+  ) => Promise<
+    {
+      message: PublicMessage;
+      chatId: string;
+      isNewChat: boolean;
+      invitedUserId?: string | null | undefined;
+    }[]
+  >;
 }

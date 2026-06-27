@@ -6,5 +6,7 @@ export const config = {
   ACCESS_TOKEN_EXPIRES_MIN: 30,
   RESET_TOKEN_EXPIRES_HOURS: 1,
 
+  INVITE_LINK_LIVE_HOURS: 12,
+
   CLIENT_URL: process.env.CLIENT_URL,
 };
