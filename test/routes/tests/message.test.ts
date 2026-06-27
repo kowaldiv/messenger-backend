@@ -1,58 +1,56 @@
 import { describe, test } from "node:test";
 import * as assert from "node:assert";
 import { createAndConnectUser } from "../../utils/test-helpers-socket.io.js";
-import { createTestChat } from "../../utils/test-helpers.js";
 
 export async function messageTest(app: any) {
   describe("Message", async () => {
-    // await test("Socket.IO - sendMessage to user", async () => {
-    //   // Создаем двух пользователей
-    //   const { client: client1, user: user1 } = await createAndConnectUser(app);
-    //   const { client: client2, user: user2 } = await createAndConnectUser(app);
+    await test("Socket.IO - sendMessage to user", async () => {
+      // Создаем двух пользователей
+      const { client: client1, user: user1 } = await createAndConnectUser(app);
+      const { client: client2, user: user2 } = await createAndConnectUser(app);
 
-    //   await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-    //   // регистрируем слушателей
-    //   const receivedPromise1 = new Promise((resolve) => {
-    //     client1.on("newMessage", (data: any) => {
-    //       resolve(data);
-    //     });
-    //   });
-    //   const receivedPromise2 = new Promise((resolve) => {
-    //     client2.on("newMessage", (data: any) => {
-    //       resolve(data);
-    //     });
-    //   });
+      // регистрируем слушателей
+      const receivedPromise1 = new Promise((resolve) => {
+        client1.on("newMessage", (data: any) => {
+          resolve(data);
+        });
+      });
+      const receivedPromise2 = new Promise((resolve) => {
+        client2.on("newMessage", (data: any) => {
+          resolve(data);
+        });
+      });
 
-    //   // Отправляем сообщение от первого пользователя второму
-    //   const messageText = "Hello from test!";
-    //   client1.emit(
-    //     "sendMessage",
-    //     JSON.stringify({
-    //       chatIdOrUserId: user2.id,
-    //       text: messageText,
-    //     }),
-    //   );
+      // Отправляем сообщение от первого пользователя второму
+      const messageText = "Hello from test!";
+      client1.emit(
+        "sendMessage",
+        JSON.stringify({
+          chatIdOrUserId: user2.id,
+          text: messageText,
+        }),
+      );
 
-    //   // Ждем результаты
-    //   const received1 = await receivedPromise1;
-    //   const received2 = await receivedPromise2;
+      // Ждем результаты
+      const received1 = await receivedPromise1;
+      const received2 = await receivedPromise2;
 
-    //   assert.ok(received1, "Should receive message");
-    //   assert.equal((received1 as any).message.text, messageText);
-    //   assert.equal((received1 as any).message.userId, user1.id);
-    //   assert.ok(received2, "Should receive message");
-    //   assert.equal((received2 as any).message.text, messageText);
-    //   assert.equal((received2 as any).message.userId, user1.id);
+      assert.ok(received1, "Should receive message");
+      assert.equal((received1 as any).message.text, messageText);
+      assert.equal((received1 as any).message.userId, user1.id);
+      assert.ok(received2, "Should receive message");
+      assert.equal((received2 as any).message.text, messageText);
+      assert.equal((received2 as any).message.userId, user1.id);
 
-    //   client1.close();
-    //   client2.close();
-    // });
+      client1.close();
+      client2.close();
+    });
 
     test("create group, invite, join and send message", async () => {
       // Создаем трех пользователей
-      const { client: client1, accessToken: accessToken1 } =
-        await createAndConnectUser(app);
+      const { client: client1 } = await createAndConnectUser(app);
       const { client: client2, user: user2 } = await createAndConnectUser(app);
       const { client: client3, user: user3 } = await createAndConnectUser(app);
 
