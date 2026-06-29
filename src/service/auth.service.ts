@@ -140,7 +140,7 @@ export function authService(
       fingerprint: "",
       expiresAt,
     });
-    // console.log(resetToken); // удалить потом (сделал только для того чтоб получить токен и проверить работает ли востановление пароля)
+    // console.log('✅ Токен успешно создан:', JSON.stringify(resetToken, null, 2)); // удалить потом (сделал только для того чтоб получить токен и проверить работает ли востановление пароля)
     // и отправляем пользователю на почту ссылку для востановления
     // const resetLink = `https://мой-сайт/reset-password/${token}`
     // await sendEmail()

@@ -1,5 +1,5 @@
 import { PublicTokenInfo } from "../../repositories/interfaces/token.repository.interface.js";
-import { User } from "../../repositories/interfaces/user.repository.interface.js";
+import { PublicUser } from "../../repositories/interfaces/userQuery.repository.interface.js";
 
 export interface AuthService {
   register(data: {
@@ -8,11 +8,11 @@ export interface AuthService {
     username: string;
     firstName: string;
     lastName?: string;
-  }): Promise<{ user: User; refreshToken: string; accessToken: string }>;
+  }): Promise<{ user: PublicUser; refreshToken: string; accessToken: string }>;
   login(data: {
     email: string;
     password: string;
-  }): Promise<{ user: User; refreshToken: string; accessToken: string }>;
+  }): Promise<{ user: PublicUser; refreshToken: string; accessToken: string }>;
   forgotPassword(email: string): Promise<void>;
   resetPassword(data: { token: string; newPassword: string }): Promise<void>;
   refreshToken(refreshToken: string): Promise<{

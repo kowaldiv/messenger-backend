@@ -11,7 +11,7 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
             email: { type: "string", format: "email" },
             password: { type: "string", minLength: 6 },
             username: { type: "string", minLength: 3 },
-            firstName: { type: "string", minLength: 5 },
+            firstName: { type: "string", minLength: 2 },
             lastName: { type: "string" },
           },
           required: ["email", "password", "username", "firstName"],
