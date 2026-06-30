@@ -40,4 +40,6 @@ export interface UserRepository {
   existsByEmail(email: string): Promise<boolean>;
 
   banUser(id: string): Promise<void>;
+
+  findManyByPattern(pattern: string): Promise<PublicUser[]>
 }

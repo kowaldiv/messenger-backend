@@ -6,7 +6,7 @@ export type CreateSessionInput = {
   expiresAt: Date;
 };
 
-export interface PublicTokenInfo {
+export interface Session {
   id: string;
   userId: string;
   fingerprint: string;
@@ -14,10 +14,10 @@ export interface PublicTokenInfo {
 }
 
 export interface TokenRepository {
-  allSessions(userId: string): Promise<PublicTokenInfo[]>;
-  createToken(data: CreateSessionInput): Promise<PublicTokenInfo>;
-  isTokenValidByToken(token: string): Promise<PublicTokenInfo | null>;
-  isTokenValidById(id: string): Promise<PublicTokenInfo | null>;
+  allSessions(userId: string): Promise<Session[]>;
+  createToken(data: CreateSessionInput): Promise<Session>;
+  isTokenValidByToken(token: string): Promise<Session | null>;
+  isTokenValidById(id: string): Promise<Session | null>;
   deleteTokenByToken(token: string): Promise<void>;
   deleteTokenById(id: string, userId: string): Promise<void>;
 }

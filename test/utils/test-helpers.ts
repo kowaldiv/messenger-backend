@@ -67,36 +67,6 @@ export async function registerTestUser(app: any): Promise<{
   };
 }
 
-// Вспомогательная функция для создания тестового чата
-export async function createTestChat(app: any, accessToken: string): Promise<string> {
-  const chatRes = await app.inject({
-    method: "POST",
-    url: "/chat/create",
-    cookies: {
-      access_token: accessToken,
-    },
-    payload: {
-      type: "group",
-      title: `Test Chat ${Date.now()}`,
-    },
-  });
-
-  if (chatRes.statusCode !== 201) {
-    console.error("Chat creation failed:", chatRes.payload);
-    throw new Error(`Failed to create test chat: ${chatRes.payload}`);
-  }
-
-  const chatData = JSON.parse(chatRes.payload);
-  const chatId = chatData.id;
-
-  if (!chatId) {
-    console.error("Chat response:", chatData);
-    throw new Error("Failed to get chat ID from response");
-  }
-
-  return chatId;
-}
-
 export function createTestFile() {
   // Простой PNG 1x1 пиксель
   const pngBuffer = Buffer.from(

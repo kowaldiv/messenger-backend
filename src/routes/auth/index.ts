@@ -78,7 +78,7 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get(
     "/sessions",
     { preHandler: fastify.authenticate },
-    fastify.controllers.auth.getSession,
+    fastify.controllers.auth.getSessions,
   );
 
   fastify.post(

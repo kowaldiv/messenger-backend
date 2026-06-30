@@ -1,4 +1,4 @@
-import { PublicTokenInfo } from "../../repositories/interfaces/token.repository.interface.js";
+import { Session } from "../../repositories/interfaces/token.repository.interface.js";
 import { PublicUser } from "../../repositories/interfaces/userQuery.repository.interface.js";
 
 export interface AuthService {
@@ -20,6 +20,6 @@ export interface AuthService {
     newRefreshToken: string;
   }>;
   logout(token: string): Promise<void>;
-  getSessions(userId: string): Promise<PublicTokenInfo[]>;
+  getSessions(userId: string): Promise<Session[]>;
   revokeSession(tokenId: string, userId: string): Promise<void>;
 }

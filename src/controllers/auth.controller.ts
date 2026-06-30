@@ -114,7 +114,7 @@ export function authController(authService: AuthService) {
     return reply.status(200).send();
   };
 
-  const getSession = async (request: FastifyRequest, reply: FastifyReply) => {
+  const getSessions = async (request: FastifyRequest, reply: FastifyReply) => {
     const userId = request.currentUser.userId;
     const sessions = await authService.getSessions(userId);
     return sessions;
@@ -139,7 +139,7 @@ export function authController(authService: AuthService) {
     resetPassword,
     refreshToken,
     logout,
-    getSession,
+    getSessions,
     revokeSession,
   };
 }

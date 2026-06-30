@@ -1,5 +1,9 @@
 import { type FastifyInstance } from "fastify";
-import { CreateUserInput, UpdateUserProfileInput, UserRepository } from "./interfaces/user.repository.interface.js";
+import {
+  CreateUserInput,
+  UpdateUserProfileInput,
+  UserRepository,
+} from "./interfaces/user.repository.interface.js";
 import { publicUserSelect, userSelect } from "./prisma/selects/user.selects.js";
 
 export function userRepository(instance: FastifyInstance): UserRepository {
@@ -104,6 +108,18 @@ export function userRepository(instance: FastifyInstance): UserRepository {
     return user !== null;
   };
 
+  // ----------- поиск ---------------
+
+  const findManyByPattern = async (pattern: string) => {
+    const users = await prisma.user.findMany({
+      where: {
+        username: { contains: pattern, mode: "insensitive" },
+      },
+      select: publicUserSelect,
+    });
+    return users;
+  };
+
   return {
     findById,
     findByEmail,
@@ -115,5 +131,6 @@ export function userRepository(instance: FastifyInstance): UserRepository {
     existsById,
     existsByUsername,
     existsByEmail,
+    findManyByPattern,
   };
 }

@@ -22,3 +22,33 @@ export async function createAndConnectUser(app: any) {
   // 4. Возвращаем объект
   return { accessToken, user, client };
 }
+
+// Вспомогательная функция для создания тестового чата
+export async function createTestChat(
+  client: any,
+  options?: {
+    type?: "group" | "channel";
+    title?: string;
+  },
+): Promise<any> {
+  const { type = "group", title = "test Chat" } = options || {};
+
+  // Создаем промис для ожидания ответа
+  const createdChat = new Promise((resolve) => {
+    client.once("createdChat", resolve);
+  });
+
+  // Отправляем запрос на создание чата
+  client.emit(
+    "createChat",
+    JSON.stringify({
+      type: type,
+      title: title,
+    }),
+  );
+
+  // Ждем ответа от сервера
+  const chat = await createdChat;
+
+  return chat;
+}

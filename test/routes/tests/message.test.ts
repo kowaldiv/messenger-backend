@@ -1,6 +1,9 @@
 import { describe, test } from "node:test";
 import * as assert from "node:assert";
-import { createAndConnectUser } from "../../utils/test-helpers-socket.io.js";
+import {
+  createAndConnectUser,
+  createTestChat,
+} from "../../utils/test-helpers-socket.io.js";
 
 export async function messageTest(app: any) {
   describe("Message", async () => {
@@ -54,20 +57,7 @@ export async function messageTest(app: any) {
       const { client: client2, user: user2 } = await createAndConnectUser(app);
       const { client: client3, user: user3 } = await createAndConnectUser(app);
 
-      const createdChat = new Promise((resolve) => {
-        client1.once("createdChat", resolve);
-      });
-
-      client1.emit(
-        "createChat",
-        JSON.stringify({
-          type: "group",
-          title: "My Test group",
-        }),
-      );
-
-      // Ждем ответа от сервера
-      const chat = (await createdChat) as any;
+      const chat = await createTestChat(client1);
       assert.strictEqual(chat.success, true, "Success should be true");
 
       // client1 ждет 2 сообщения

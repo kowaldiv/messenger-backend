@@ -158,6 +158,18 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     }
   };
 
+  // ------- поиск --------------
+
+  const findManyByPattern = async (userId: string, pattern: string) => {
+    const chats = await prisma.chat.findMany({
+      where: {
+        title: { contains: pattern, mode: "insensitive" },
+      },
+      select: getChatSelect(userId),
+    });
+    return chats as unknown as Chat[];
+  };
+
   return {
     create,
     addParticipant,
@@ -168,5 +180,6 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     findAllUserChats,
     findFullChatById,
     ensureUserIsChatOwner,
+    findManyByPattern,
   };
 }
