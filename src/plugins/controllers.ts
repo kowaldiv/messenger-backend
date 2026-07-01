@@ -3,6 +3,7 @@ import { authController } from "../controllers/auth.controller.js";
 import { avatarController } from "../controllers/avatar.controller.js";
 import { chatController } from "../controllers/chat.controller.js";
 import { searchController } from "../controllers/search.controller.js";
+import { userController } from "../controllers/user.controller.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -11,6 +12,7 @@ declare module "fastify" {
       avatar: ReturnType<typeof avatarController>;
       chat: ReturnType<typeof chatController>;
       search: ReturnType<typeof searchController>;
+      user: ReturnType<typeof userController>;
     };
   }
 }
@@ -24,6 +26,7 @@ export default fp(
     const avatarCtrl = avatarController(services.avatar);
     const chatCtrl = chatController(services.chat);
     const searchCtrl = searchController(services.search);
+    const userCtrl = userController(services.user);
 
     // Декорируем fastify
     fastify.decorate("controllers", {
@@ -31,6 +34,7 @@ export default fp(
       avatar: avatarCtrl,
       chat: chatCtrl,
       search: searchCtrl,
+      user: userCtrl,
     });
 
     fastify.log.info("Controllers registered");

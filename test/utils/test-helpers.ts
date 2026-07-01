@@ -1,14 +1,6 @@
 import { Readable } from "node:stream";
 
-interface User {
-  email: string;
-  password: string;
-  username: string;
-  firstname: string;
-  lastName: string;
-}
-
-export interface PublicUser {
+export interface User {
   id: string;
   username: string;
   firstName: string;
@@ -25,11 +17,19 @@ export interface Avatar {
   createdAt: Date;
 }
 
-export interface PublicUserWithAvatars extends PublicUser {
+export interface PublicUser extends User {
   avatars: Avatar[];
 }
 
-export function createTestUser(userData?: Partial<User>) {
+export function createTestUser(
+  userData?: Partial<{
+    email: string;
+    password: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+  }>,
+) {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(7);
   const defaultUser = {
@@ -46,12 +46,18 @@ export function createTestUser(userData?: Partial<User>) {
 }
 
 export async function registerTestUser(app: any): Promise<{
-  testUser: User;
-  user: PublicUserWithAvatars;
+  testUser: {
+    email: string;
+    password: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+  };
+  user: PublicUser;
   accessToken: string;
   refreshToken: string;
 }> {
-  const testUser = createTestUser() as User;
+  const testUser = createTestUser();
   const res = await app.inject({
     method: "POST",
     url: "/auth/register",

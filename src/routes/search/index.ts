@@ -10,7 +10,7 @@ const search: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           type: "object",
           required: ["pattern"],
           properties: {
-            pattern: { type: "string" },
+            pattern: { type: "string", minLength: 1 },
           },
         },
       },

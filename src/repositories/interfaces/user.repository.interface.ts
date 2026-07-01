@@ -31,7 +31,7 @@ export interface UserRepository {
 
   create(data: CreateUserInput): Promise<PublicUser>;
 
-  updateProfile(id: string, data: UpdateUserProfileInput): Promise<User>;
+  updateProfile(id: string, data: UpdateUserProfileInput): Promise<void>;
   updatePassword(id: string, newPasswordHash: string): Promise<void>;
   updateLastSeen(id: string): Promise<void>;
 
@@ -41,5 +41,9 @@ export interface UserRepository {
 
   banUser(id: string): Promise<void>;
 
-  findManyByPattern(pattern: string): Promise<PublicUser[]>
+  findManyByPattern(
+    pattern: string,
+    page?: number,
+    limit?: number,
+  ): Promise<PublicUser[]>;
 }

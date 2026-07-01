@@ -1,10 +1,20 @@
+import { ConflictError, NotFoundError } from "../errors/index.js";
 import { UserRepository } from "../repositories/interfaces/user.repository.interface.js";
+import { UserQueryRepository } from "../repositories/interfaces/userQuery.repository.interface.js";
+import { UserService } from "./interfaces/user.service.interface.js";
 
-export function userService(userRepository: UserRepository) {
-
+export function userService(
+  userRepository: UserRepository,
+  userQueryReposirory: UserQueryRepository,
+): UserService {
   // ------------ получение информации ----------------
 
+  const getUserInfo = async (userId: string) => {
+    const userInfo = await userQueryReposirory.findByIdWithAvatars(userId);
+    if (!userInfo) throw new NotFoundError("Пользователь не найден");
 
+    return userInfo;
+  };
 
   // -------------- обновление информации ----------------
 
@@ -20,8 +30,14 @@ export function userService(userRepository: UserRepository) {
     };
     userId: string;
   }) => {
-    const updatedUserInfo = await userRepository.updateProfile(userId, data);
-    return updatedUserInfo;
+    if (data.username) {
+      const isUserExists = await userRepository.existsByUsername(data.username);
+      if (isUserExists)
+        throw new ConflictError(
+          "Пользователь с таким username уже существует!",
+        );
+    }
+    await userRepository.updateProfile(userId, data);
   };
 
   const updateLastSeen = async (userId: string) => {
@@ -29,6 +45,7 @@ export function userService(userRepository: UserRepository) {
   };
 
   return {
+    getUserInfo,
     updateUserProfile,
     updateLastSeen,
   };

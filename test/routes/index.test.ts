@@ -5,6 +5,7 @@ import { authTest } from "./tests/auth.test.js";
 import { avatarTest } from "./tests/avatar.test.js";
 import { messageTest } from "./tests/message.test.js";
 import { searchTest } from "./tests/search.test.js";
+import { userTest } from "./tests/user.test.js";
 
 await test("App", { timeout: 10000 }, async (t) => {
   const app = await build(t);
@@ -13,4 +14,5 @@ await test("App", { timeout: 10000 }, async (t) => {
   await avatarTest(app);
   await messageTest(app);
   await searchTest(app);
+  await userTest(app);
 });

@@ -59,7 +59,12 @@ export interface ChatRepository {
   findAllUserChats(userId: string): Promise<Chat[]>;
   findFullChatById(chatId: string, userId: string): Promise<Chat | null>;
   ensureUserIsChatOwner(userId: string, chatId: string): Promise<boolean>;
-  findManyByPattern(userId: string, pattern: string): Promise<Chat[]>;
+  findManyByPattern(
+    userId: string,
+    pattern: string,
+    page?: number,
+    limit?: number,
+  ): Promise<Chat[]>;
 }
 
 // export type PublicChat = {

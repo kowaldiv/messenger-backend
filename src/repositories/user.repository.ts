@@ -45,7 +45,7 @@ export function userRepository(instance: FastifyInstance): UserRepository {
   // ------ обновление -------
 
   const updateProfile = async (id: string, data: UpdateUserProfileInput) => {
-    const user = await prisma.user.update({
+    await prisma.user.update({
       where: { id },
       data: {
         ...data,
@@ -53,7 +53,6 @@ export function userRepository(instance: FastifyInstance): UserRepository {
       },
       select: userSelect,
     });
-    return user;
   };
 
   const updatePassword = async (
@@ -110,12 +109,20 @@ export function userRepository(instance: FastifyInstance): UserRepository {
 
   // ----------- поиск ---------------
 
-  const findManyByPattern = async (pattern: string) => {
+  const findManyByPattern = async (
+    pattern: string,
+    page: number = 1,
+    limit: number = 5,
+  ) => {
+    const skip = (page - 1) * limit;
+
     const users = await prisma.user.findMany({
       where: {
         username: { contains: pattern, mode: "insensitive" },
       },
       select: publicUserSelect,
+      skip,
+      take: limit,
     });
     return users;
   };

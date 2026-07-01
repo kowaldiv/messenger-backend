@@ -9,6 +9,8 @@ import { AvatarService } from "../service/interfaces/avatar.service.interface.js
 import { AuthService } from "../service/interfaces/auth.service.interface.js";
 import { searchService } from "../service/search.service.js";
 import { SearchService } from "../service/interfaces/channel.setvice.interface.js";
+import { userService } from "../service/user.service.js";
+import { UserService } from "../service/interfaces/user.service.interface.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -18,6 +20,7 @@ declare module "fastify" {
       chat: ChatService;
       message: MessageService;
       search: SearchService;
+      user: UserService;
     };
   }
 }
@@ -57,6 +60,8 @@ export default fp(
 
     const searchSvc = searchService(repositories.user, repositories.chat);
 
+    const userSvc = userService(repositories.user, repositories.userQuery);
+
     // Декорируем fastify
     fastify.decorate("services", {
       auth: authSvc,
@@ -64,6 +69,7 @@ export default fp(
       chat: chatSvc,
       message: messageSvc,
       search: searchSvc,
+      user: userSvc,
     });
 
     fastify.log.info("Services registered");

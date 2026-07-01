@@ -160,12 +160,21 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
 
   // ------- поиск --------------
 
-  const findManyByPattern = async (userId: string, pattern: string) => {
+  const findManyByPattern = async (
+    userId: string,
+    pattern: string,
+    page: number = 1,
+    limit: number = 5,
+  ) => {
+    const skip = (page - 1) * limit;
+
     const chats = await prisma.chat.findMany({
       where: {
         title: { contains: pattern, mode: "insensitive" },
       },
       select: getChatSelect(userId),
+      skip,
+      take: limit,
     });
     return chats as unknown as Chat[];
   };

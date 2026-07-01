@@ -170,13 +170,13 @@ export function authService(
     // создаем access token и новый refresh token
     const nonce = crypto.randomBytes(16).toString("hex");
     const accessToken = instance.jwt.sign(
-      { userId: validToken.id, nonce: nonce },
-      { expiresIn: `${config.RESET_TOKEN_EXPIRES_HOURS}h` },
+      { userId: validToken.userId, nonce: nonce },
+      { expiresIn: `${config.ACCESS_TOKEN_EXPIRES_MIN}m` },
     );
     const refreshNonce = crypto.randomBytes(16).toString("hex");
     const newRefreshToken = instance.jwt.sign(
       { userId: validToken.id, nonce: refreshNonce },
-      { expiresIn: `${config.RESET_TOKEN_EXPIRES_HOURS}h` },
+      { expiresIn: `${config.REFRESH_TOKEN_EXPIRES_DAYS}d` },
     );
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + config.REFRESH_TOKEN_EXPIRES_DAYS);

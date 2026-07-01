@@ -9,4 +9,6 @@ export const config = {
   INVITE_LINK_LIVE_HOURS: 12,
 
   CLIENT_URL: process.env.CLIENT_URL,
-};
+
+  ENVIRONMENT: process.env.ENVIRONMENT,
+} as const;

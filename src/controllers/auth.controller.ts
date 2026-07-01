@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { UnauthorizedError } from "../errors/index.js";
 import { AuthService } from "../service/interfaces/auth.service.interface.js";
+import { config } from "../config/index.js";
 
 export function authController(authService: AuthService) {
   const register = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -21,16 +22,16 @@ export function authController(authService: AuthService) {
     reply.setCookie("access_token", accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: true,
+      sameSite: "none",
       path: "/",
-      maxAge: 1 * 60 * 60,
+      maxAge: 60 * config.ACCESS_TOKEN_EXPIRES_MIN,
     });
     reply.setCookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: true,
+      sameSite: "none",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: 60 * 60 * 24 * config.REFRESH_TOKEN_EXPIRES_DAYS,
     });
     return reply.status(201).send(user);
   };
@@ -47,16 +48,16 @@ export function authController(authService: AuthService) {
     reply.setCookie("access_token", accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: true,
+      sameSite: "none",
       path: "/",
-      maxAge: 1 * 60 * 60,
+      maxAge: 60 * config.ACCESS_TOKEN_EXPIRES_MIN,
     });
     reply.setCookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: true,
+      sameSite: "none",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: 60 * 60 * 24 * config.REFRESH_TOKEN_EXPIRES_DAYS,
     });
     return reply.status(200).send(user);
   };
@@ -90,16 +91,16 @@ export function authController(authService: AuthService) {
     reply.setCookie("access_token", accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: true,
+      sameSite: "none",
       path: "/",
-      maxAge: 1 * 60 * 60,
+      maxAge: 60 * config.ACCESS_TOKEN_EXPIRES_MIN,
     });
     reply.setCookie("refresh_token", newRefreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: true,
+      sameSite: "none",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: 60 * 60 * 24 * config.REFRESH_TOKEN_EXPIRES_DAYS,
     });
   };
 
