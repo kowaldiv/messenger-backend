@@ -4,12 +4,14 @@ import {
   ChatParticipant,
   ChatType,
 } from "../../repositories/interfaces/chat.repository.interface.js";
+import { normalizeMessage, PublicMessage } from "./message.transformer.js";
 
 export type PublicChat = {
   id: string;
   type: ChatType;
   title: string | null;
   createdAt: Date;
+  messages: PublicMessage[];
 } & (
   | { type: "private"; chatParticipant: ChatParticipant }
   | {
@@ -24,14 +26,13 @@ export type PublicChat = {
     }
 );
 
-export function transformChat(
-  chat: Chat,
-): PublicChat {
+export function transformChat(chat: Chat): PublicChat {
   const base = {
     id: chat.id,
     type: chat.type,
     title: chat.title,
     createdAt: chat.createdAt,
+    messages: chat.messages.map((message) => normalizeMessage(message)),
   };
 
   switch (chat.type) {
