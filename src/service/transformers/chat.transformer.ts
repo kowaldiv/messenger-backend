@@ -9,18 +9,19 @@ import { normalizeMessage, PublicMessage } from "./message.transformer.js";
 export type PublicChat = {
   id: string;
   type: ChatType;
-  title: string | null;
   createdAt: Date;
   messages: PublicMessage[];
 } & (
   | { type: "private"; chatParticipant: ChatParticipant }
   | {
       type: "group";
+      title: string;
       avatars: Avatar[];
       chatParticipants: ChatParticipant[];
     }
   | {
       type: "channel";
+      title: string;
       avatars: Avatar[];
       channelSettings: { description: string | null; isPrivate: boolean };
     }
@@ -30,7 +31,6 @@ export function transformChat(chat: Chat): PublicChat {
   const base = {
     id: chat.id,
     type: chat.type,
-    title: chat.title,
     createdAt: chat.createdAt,
     messages: chat.messages.map((message) => normalizeMessage(message)),
   };
@@ -48,6 +48,7 @@ export function transformChat(chat: Chat): PublicChat {
       return {
         ...base,
         type: "group" as const,
+        title: chat.title,
         avatars: chat.avatars,
         chatParticipants: chat.chatParticipants,
       };
@@ -57,6 +58,7 @@ export function transformChat(chat: Chat): PublicChat {
       return {
         ...base,
         type: "channel" as const,
+        title: chat.title,
         avatars: chat.avatars,
         channelSettings: chat.channelSettings,
       };

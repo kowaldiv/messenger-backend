@@ -23,6 +23,7 @@ export function authController(authService: AuthService) {
       httpOnly: true,
       secure: true,
       sameSite: "none",
+      partitioned: true,
       path: "/",
       maxAge: 60 * config.ACCESS_TOKEN_EXPIRES_MIN,
     });
@@ -30,6 +31,7 @@ export function authController(authService: AuthService) {
       httpOnly: true,
       secure: true,
       sameSite: "none",
+      partitioned: true,
       path: "/",
       maxAge: 60 * 60 * 24 * config.REFRESH_TOKEN_EXPIRES_DAYS,
     });
@@ -49,6 +51,7 @@ export function authController(authService: AuthService) {
       httpOnly: true,
       secure: true,
       sameSite: "none",
+      partitioned: true,
       path: "/",
       maxAge: 60 * config.ACCESS_TOKEN_EXPIRES_MIN,
     });
@@ -56,6 +59,7 @@ export function authController(authService: AuthService) {
       httpOnly: true,
       secure: true,
       sameSite: "none",
+      partitioned: true,
       path: "/",
       maxAge: 60 * 60 * 24 * config.REFRESH_TOKEN_EXPIRES_DAYS,
     });
@@ -92,6 +96,7 @@ export function authController(authService: AuthService) {
       httpOnly: true,
       secure: true,
       sameSite: "none",
+      partitioned: true,
       path: "/",
       maxAge: 60 * config.ACCESS_TOKEN_EXPIRES_MIN,
     });
@@ -99,6 +104,7 @@ export function authController(authService: AuthService) {
       httpOnly: true,
       secure: true,
       sameSite: "none",
+      partitioned: true,
       path: "/",
       maxAge: 60 * 60 * 24 * config.REFRESH_TOKEN_EXPIRES_DAYS,
     });
