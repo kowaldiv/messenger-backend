@@ -74,13 +74,13 @@ export function tokenRepository(instance: FastifyInstance): TokenRepository {
   // ----------- удалеение ------------
 
   const deleteTokenByToken = async (token: string) => {
-    await prisma.session.delete({
+    await prisma.session.deleteMany({
       where: { token },
     });
   };
 
   const deleteTokenById = async (tokenId: string, userId: string) => {
-    await prisma.session.delete({
+    await prisma.session.deleteMany({
       where: { id: tokenId, userId },
     });
   };

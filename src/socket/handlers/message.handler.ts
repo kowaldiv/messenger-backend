@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 import { Server as SocketIOServer } from "socket.io";
 import { MessageService } from "../../service/interfaces/message.service.interface.js";
 import { AppError } from "../../errors/index.js";
-import { joinUserToChat } from "./helpers.js";
+import { joinUserToChat, sendNewChatToUser } from "./helpers.js";
 
 export const messageHandler = (
   socket: Socket,
@@ -14,13 +14,12 @@ export const messageHandler = (
       const userId = socket.data.currentUser?.userId;
       const { chatIdOrUserId, text } = JSON.parse(data);
 
-      const { message, chatId, isNewChat } = await messageService.create(
-        userId,
-        chatIdOrUserId,
-        text,
-      );
+      const { message, chatId, isNewChat, newChat } =
+        await messageService.create(userId, chatIdOrUserId, text);
 
-      if (isNewChat) {
+      if (isNewChat && newChat) {
+        await sendNewChatToUser(io, userId, newChat);
+        await sendNewChatToUser(io, chatIdOrUserId, newChat);
         await joinUserToChat(io, userId, chatId);
         await joinUserToChat(io, chatIdOrUserId, chatId);
       }
@@ -64,7 +63,7 @@ export const messageHandler = (
           success: true,
           message,
         });
-      }); 
+      });
     } catch (error) {
       console.error(error);
       if (error instanceof AppError) {

@@ -6,6 +6,7 @@ import { MessageService } from "./interfaces/message.service.interface.js";
 import { config } from "../config/index.js";
 import { InviteLinkRepository } from "../repositories/interfaces/invite-link.repository.interface.js";
 import { normalizeMessage } from "./transformers/message.transformer.js";
+import { transformChat } from "./transformers/chat.transformer.js";
 
 export function messageService(
   messageRepository: MessageRepository,
@@ -62,6 +63,7 @@ export function messageService(
         message: normalizeMessage(message),
         isNewChat: true,
         chatId: newChat.id,
+        newChat: transformChat(newChat),
       };
     }
 
