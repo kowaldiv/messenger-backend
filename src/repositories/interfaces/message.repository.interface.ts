@@ -35,7 +35,7 @@ export interface ReplyTo {
 }
 export interface Message {
   id: string;
-  chatId: string | null;
+  chatId: string;
   userId: string | null;
   text: string | null;
   type: "text" | "invite" | "joined";

@@ -10,7 +10,7 @@ import {
 // Определяем типы для каждого типа сообщения
 export type TextMessage = {
   id: string;
-  chatId: string | null;
+  chatId: string;
   userId: string | null;
   text: string | null;
   type: "text";
@@ -30,7 +30,7 @@ interface JoinedMessageMetadata {
 }
 export type JoinedMessage = {
   id: string;
-  chatId: string | null;
+  chatId: string;
   type: "joined";
   metadata: JoinedMessageMetadata;
   createdAt: Date;
@@ -38,7 +38,7 @@ export type JoinedMessage = {
 
 export type InviteMessage = {
   id: string;
-  chatId: string | null;
+  chatId: string;
   userId: string | null;
   type: "invite";
   metadata: PublicInviteLink;

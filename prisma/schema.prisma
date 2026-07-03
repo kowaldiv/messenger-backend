@@ -98,7 +98,7 @@ model MessageReaction {
 
 model Message {
   id               String            @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  chatId           String?           @map("chat_id") @db.Uuid
+  chatId           String           @map("chat_id") @db.Uuid
   userId           String?           @map("user_id") @db.Uuid
   type             String            @default("text")
   text             String?

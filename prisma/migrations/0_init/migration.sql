@@ -102,7 +102,7 @@ create table
 create table
   messages (
     id UUID primary key default uuidv7 (),
-    chat_id UUID,
+    chat_id UUID not null,
     user_id UUID,
     type varchar(20) not null default 'text' check (type in ('text', 'invite', 'joined')),
     text text,
