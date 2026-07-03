@@ -12,7 +12,7 @@ export const messageHandler = (
   socket.on("sendMessage", async (data) => {
     try {
       const userId = socket.data.currentUser?.userId;
-      const { chatIdOrUserId, text } = JSON.parse(data);
+      const { chatIdOrUserId, text } = data;
 
       const { message, chatId, isNewChat, newChat } =
         await messageService.create(userId, chatIdOrUserId, text);
@@ -46,7 +46,7 @@ export const messageHandler = (
   socket.on("invite", async (data) => {
     try {
       const userId = socket.data.currentUser?.userId;
-      const { destinationChatId, chatIds } = JSON.parse(data);
+      const { destinationChatId, chatIds } = data;
 
       const messages = await messageService.sendInviteToChat(
         userId,

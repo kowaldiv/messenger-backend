@@ -33,7 +33,7 @@ export const chatHandler = (
     socket.on("createChat", async (data) => {
       try {
         const userId = socket.data.currentUser.userId;
-        const { type, title, description, isPrivate } = JSON.parse(data);
+        const { type, title, description, isPrivate } = data;
 
         if (type === "channel") {
           const chat = await chatService.create({
@@ -70,7 +70,7 @@ export const chatHandler = (
     socket.on("joinChat", async (data) => {
       try {
         const userId = socket.data.currentUser.userId;
-        const { inviteLinkToken, chatId } = JSON.parse(data);
+        const { inviteLinkToken, chatId } = data;
 
         const chat = await chatService.joinChat(userId, {
           inviteLinkToken,

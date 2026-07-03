@@ -37,12 +37,12 @@ export async function chatTest(app: any) {
 
       client.emit(
         "createChat",
-        JSON.stringify({
+        {
           type: "channel",
           title: "My Test Channel",
           description: "Test description",
           isPrivate: false,
-        }),
+        },
       );
 
       // Ждем ответа от сервера

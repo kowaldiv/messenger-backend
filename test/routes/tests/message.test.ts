@@ -30,10 +30,10 @@ export async function messageTest(app: any) {
       const messageText = "Hello from test!";
       client1.emit(
         "sendMessage",
-        JSON.stringify({
+        {
           chatIdOrUserId: user2.id,
           text: messageText,
-        }),
+        },
       );
 
       // Ждем результаты
@@ -78,10 +78,10 @@ export async function messageTest(app: any) {
 
       client1.emit(
         "invite",
-        JSON.stringify({
+        {
           destinationChatId: chat.chat.id,
           chatIds: [user2.id, user3.id],
-        }),
+        },
       );
 
       const [messages1, message2, message3] = (await Promise.all([
@@ -118,15 +118,15 @@ export async function messageTest(app: any) {
 
       client2.emit(
         "joinChat",
-        JSON.stringify({
+        {
           inviteLinkToken: inviteTokenClient2,
-        }),
+        },
       );
       client3.emit(
         "joinChat",
-        JSON.stringify({
+        {
           inviteLinkToken: inviteTokenClient3,
-        }),
+        },
       );
 
       const [chat1, chat2] = (await Promise.all([newChat1, newChat2])) as [
@@ -151,10 +151,10 @@ export async function messageTest(app: any) {
       const messageText = "I joined to group!";
       client3.emit(
         "sendMessage",
-        JSON.stringify({
+        {
           chatIdOrUserId: chat2.chat.id,
           text: messageText,
-        }),
+        },
       );
 
       const [messageInGroup1, messageInGroup2, messageInGroup3] =
