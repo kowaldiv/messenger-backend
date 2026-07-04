@@ -8,7 +8,7 @@ export function searchService(
   chatRepository: ChatRepository,
 ): SearchService {
   const search = async (userId: string, pattern: string) => {
-    const users = await userRepository.findManyByPattern(pattern);
+    const users = await userRepository.findManyByPattern(userId, pattern);
     const chats = await chatRepository.findManyByPattern(userId, pattern);
     return { users, chats: chats.map((chat) => transformChat(chat)) };
   };

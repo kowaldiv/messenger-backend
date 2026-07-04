@@ -59,11 +59,13 @@ export function messageService(
         attachments,
       });
 
+      const chat = await chatRepository.findFullChatById(newChat.id, userId);
+
       return {
         message: normalizeMessage(message),
         isNewChat: true,
         chatId: newChat.id,
-        newChat: transformChat(newChat),
+        chat: chat ? transformChat(chat) : undefined,
       };
     }
 

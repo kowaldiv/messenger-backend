@@ -1,4 +1,5 @@
 import {
+  BadRequestError,
   ConflictError,
   NotFoundError,
   UnauthorizedError,
@@ -83,13 +84,13 @@ export function authService(
     const userWithCredentials =
       await authRepository.findByEmailWithCredentials(email);
     if (!userWithCredentials)
-      throw new UnauthorizedError("INVALID_CREDENTIALS");
+      throw new BadRequestError("INVALID_CREDENTIALS");
     const isValidPassword = await bcrypt.compare(
       password,
       userWithCredentials.passwordHash,
     );
     if (!isValidPassword) {
-      throw new UnauthorizedError("INVALID_CREDENTIALS");
+      throw new BadRequestError("INVALID_CREDENTIALS");
     }
     // достаем информацию о пользователе
     const user = await userQueryRepository.findByIdWithAvatars(

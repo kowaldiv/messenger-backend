@@ -14,12 +14,13 @@ export const messageHandler = (
       const userId = socket.data.currentUser?.userId;
       const { chatIdOrUserId, text } = data;
 
-      const { message, chatId, isNewChat, newChat } =
+      const { message, chatId, isNewChat, chat } =
         await messageService.create(userId, chatIdOrUserId, text);
+        console.log(chat)
 
-      if (isNewChat && newChat) {
-        await sendNewChatToUser(io, userId, newChat);
-        await sendNewChatToUser(io, chatIdOrUserId, newChat);
+      if (isNewChat && chat) {
+        await sendNewChatToUser(io, userId, chat);
+        await sendNewChatToUser(io, chatIdOrUserId, chat);
         await joinUserToChat(io, userId, chatId);
         await joinUserToChat(io, chatIdOrUserId, chatId);
       }

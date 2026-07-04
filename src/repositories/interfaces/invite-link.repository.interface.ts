@@ -2,7 +2,7 @@ import { Avatar } from "./avatar.repository.interface.js";
 import { ChatInfo } from "./chat.repository.interface.js";
 
 interface InviteLinkChatInfo extends ChatInfo {
-  tilte: string;
+  title: string;
   avatars: Avatar[];
 }
 

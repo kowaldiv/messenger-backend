@@ -42,6 +42,7 @@ export interface UserRepository {
   banUser(id: string): Promise<void>;
 
   findManyByPattern(
+    userId: string,
     pattern: string,
     page?: number,
     limit?: number,

@@ -17,10 +17,11 @@ export const chatHandler = (
       for (const chat of userChats) {
         await joinUserToChat(io, userId, chat.id);
       }
+      console.log()
 
       socket.emit("joinedAllChats", {
         success: true,
-        chats: userChats.map((chat) => chat.id),
+        chats: userChats,
         count: userChats.length,
       });
     } catch (error) {

@@ -110,6 +110,7 @@ export function userRepository(instance: FastifyInstance): UserRepository {
   // ----------- поиск ---------------
 
   const findManyByPattern = async (
+    userId: string,
     pattern: string,
     page: number = 1,
     limit: number = 5,
@@ -118,6 +119,7 @@ export function userRepository(instance: FastifyInstance): UserRepository {
 
     const users = await prisma.user.findMany({
       where: {
+        id: { not: userId },
         username: { contains: pattern, mode: "insensitive" },
       },
       select: publicUserSelect,
