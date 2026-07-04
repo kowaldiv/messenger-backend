@@ -59,6 +59,7 @@ export interface ChatRepository {
   findAllUserChats(userId: string): Promise<Chat[]>;
   findFullChatById(chatId: string, userId: string): Promise<Chat | null>;
   ensureUserIsChatOwner(userId: string, chatId: string): Promise<boolean>;
+  haveUsersPrivateChat(userId1: string, userId2: string): Promise<Chat | null>
   findManyByPattern(
     userId: string,
     pattern: string,

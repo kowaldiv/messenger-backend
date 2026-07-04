@@ -33,66 +33,88 @@ export function messageService(
 
     // проверяем чат
     const chat = await chatRepository.findById(chatIdOrUserId);
-    if (!chat) {
-      // чат не найден - пробуем создать новый
-      const recipientExists = await userRepository.findById(chatIdOrUserId);
-      if (!recipientExists) {
-        throw new NotFoundError("USER_AND_CHAT_NOT_FOUND");
-      }
-      if (userId === chatIdOrUserId) {
-        throw new Error("CANNOT_SEND_MESSAGE_TO_SELF");
-      }
 
-      // создаем новый чат
-      const newChat = await chatRepository.create({ type: "private" }, userId);
-      await Promise.all([
-        chatRepository.addParticipant(newChat.id, userId, "member"),
-        chatRepository.addParticipant(newChat.id, chatIdOrUserId, "member"),
-      ]);
-
+    if (chat) {
+      // Чат существует — отправляем сообщение в существующий чат
       const message = await messageRepository.create({
         userId,
-        chatId: newChat.id,
+        chatId: chat.id,
         type: "text",
         text,
         replyToId,
         attachments,
       });
 
-      const chat = await chatRepository.findFullChatById(newChat.id, userId);
-
       return {
         message: normalizeMessage(message),
-        isNewChat: true,
-        chatId: newChat.id,
-        chat: chat ? transformChat(chat) : undefined,
+        isNewChat: false,
+        chatId: chat.id,
       };
     }
 
-    // чат существует - проверяем права
-    const userInChat = await chatRepository.userInChat(userId, chat.id);
-    if (!userInChat) {
-      throw new ConflictError("USER_NOT_IN_CHAT");
+    // чат не найден - проверяем, может это ID пользователя
+    const recipientExists = await userRepository.findById(chatIdOrUserId);
+    if (!recipientExists) {
+      throw new NotFoundError("USER_AND_CHAT_NOT_FOUND");
     }
 
-    // проверка прав для канала
-    if (chat.type === "channel" && userInChat.role !== "owner") {
-      throw new ConflictError("YOU_NOT_A_OWNER_OF_THIS_CHANNEL");
+    if (userId === chatIdOrUserId) {
+      throw new Error("CANNOT_SEND_MESSAGE_TO_SELF");
     }
 
+    // Проверяем, есть ли уже приватный чат между пользователями
+    const existingChat = await chatRepository.haveUsersPrivateChat(
+      userId,
+      chatIdOrUserId,
+    );
+
+    let targetChatId: string;
+    let isNewChat: boolean;
+
+    if (existingChat) {
+      // Чат уже существует — используем его
+      targetChatId = existingChat.id;
+      isNewChat = false;
+    } else {
+      // Создаём новый чат
+      const newChat = await chatRepository.create({ type: "private" }, userId);
+      await Promise.all([
+        chatRepository.addParticipant(newChat.id, userId, "member"),
+        chatRepository.addParticipant(newChat.id, chatIdOrUserId, "member"),
+      ]);
+      targetChatId = newChat.id;
+      isNewChat = true;
+    }
+
+    // создаём сообщение
     const message = await messageRepository.create({
       userId,
-      chatId: chat.id,
+      chatId: targetChatId,
       type: "text",
       text,
       replyToId,
       attachments,
     });
 
+    // Если чат новый — возвращаем полные данные
+    if (isNewChat) {
+      const fullChat = await chatRepository.findFullChatById(
+        targetChatId,
+        userId,
+      );
+      return {
+        message: normalizeMessage(message),
+        isNewChat: true,
+        chatId: targetChatId,
+        chat: fullChat ? transformChat(fullChat) : undefined,
+      };
+    }
+
+    // Если чат существующий — возвращаем только ID
     return {
       message: normalizeMessage(message),
       isNewChat: false,
-      chatId: chat.id,
+      chatId: targetChatId,
     };
   };
 

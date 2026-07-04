@@ -158,6 +158,24 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     }
   };
 
+  const haveUsersPrivateChat = async (userId1: string, userId2: string) => {
+    const chat = await prisma.chat.findFirst({
+      where: {
+        type: "private",
+        chatParticipants: {
+          some: { userId: userId1 },
+        },
+        AND: {
+          chatParticipants: {
+            some: { userId: userId2 },
+          },
+        },
+      },
+    });
+    if (!chat) return null;
+    return chat as unknown as Chat;
+  };
+
   // ------- поиск --------------
 
   const findManyByPattern = async (
@@ -189,6 +207,7 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     findAllUserChats,
     findFullChatById,
     ensureUserIsChatOwner,
+    haveUsersPrivateChat,
     findManyByPattern,
   };
 }
