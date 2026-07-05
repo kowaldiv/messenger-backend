@@ -12,8 +12,6 @@ export async function messageTest(app: any) {
       const { client: client1, user: user1 } = await createAndConnectUser(app);
       const { client: client2, user: user2 } = await createAndConnectUser(app);
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
       // регистрируем слушателей
       const receivedPromise1 = new Promise((resolve) => {
         client1.on("newMessage", (data: any) => {
@@ -171,6 +169,7 @@ export async function messageTest(app: any) {
       client1.close();
       client2.close();
       client3.close();
-    });
+    }, 
+  );
   });
 }

@@ -213,8 +213,32 @@ export function messageService(
     return messages;
   };
 
+  // ------------- получение сообщений ---------------------
+
+  const getMessages = async ({
+    chatId,
+    beforeId,
+    limit = 30,
+  }: {
+    chatId: string;
+    beforeId?: string;
+    limit?: number;
+  }) => {
+    const messages = await messageRepository.getMessages({
+      chatId,
+      beforeId,
+      limit,
+    });
+
+    return {
+      messages: messages.map((message) => normalizeMessage(message)),
+      hasMore: messages.length === limit,
+    };
+  };
+
   return {
     create,
     sendInviteToChat,
+    getMessages,
   };
 }

@@ -52,3 +52,24 @@ export async function createTestChat(
 
   return chat;
 }
+
+export async function sendMessageHelper(
+  client: any,
+  chatOrUserId: string,
+): Promise<any> {
+  // Создаем промис для ожидания ответа
+  const messagePromise = new Promise((resolve) => {
+    client.once("newMessage", resolve);
+  });
+
+  const messageText = "Hello from test!";
+  client.emit("sendMessage", {
+    chatIdOrUserId: chatOrUserId,
+    text: messageText,
+  });
+
+  // Ждем ответа от сервера
+  const message = await messagePromise;
+
+  return message;
+}

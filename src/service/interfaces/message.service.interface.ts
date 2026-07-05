@@ -30,4 +30,9 @@ export interface MessageService {
       invitedUserId?: string | null | undefined;
     }[]
   >;
+  getMessages: (params: {
+    chatId: string;
+    beforeId?: string;
+    limit?: number;
+  }) => Promise<{ messages: PublicMessage[]; hasMore: boolean }>;
 }

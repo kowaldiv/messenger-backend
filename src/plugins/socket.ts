@@ -3,8 +3,12 @@ import { Server as SocketIOServer } from "socket.io";
 import { config } from "../config/index.js";
 import { UnauthorizedError } from "../errors/index.js";
 import cookie from "cookie";
-import { messageHandler } from "../socket/handlers/message.handler.js";
-import { chatHandler } from "../socket/handlers/chat.handler.js";
+
+import { joinAllChatsHandler } from "../socket/handlers/chats/joinAllChats.handler.js";
+import { createChatHandler } from "../socket/handlers/chats/createChat.handler.js";
+import { joinChatHandler } from "../socket/handlers/chats/joinChat.handler.js";
+import { sendMessageHandler } from "../socket/handlers/messages/sendMessage.handler.js";
+import { inviteHandler } from "../socket/handlers/messages/invite.handler.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -59,17 +63,12 @@ export default fp(
       const user = socket.data.currentUser;
       instance.log.info(`User ${user.userId} connected: ${socket.id}`);
 
-      messageHandler(
-        socket,
-        io,
-        instance.services.message,
-      );
+      sendMessageHandler(socket, io, instance.services.message);
+      inviteHandler(socket, io, instance.services.message);
 
-      chatHandler(
-        socket,
-        io,
-        instance.services.chat,
-      )
+      joinAllChatsHandler(socket, io, instance.services.chat);
+      createChatHandler(socket, io, instance.services.chat);
+      joinChatHandler(socket, io, instance.services.chat);
 
       socket.on("disconnect", () => {
         instance.log.info(`User ${user.chatId} disconnected: ${socket.id}`);

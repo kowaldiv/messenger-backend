@@ -58,4 +58,9 @@ export interface MessageRepository {
     replyToId?: string;
     attachments?: { fileUrl: string; fileType: string; fileName: string }[];
   }): Promise<Message>;
+  getMessages: (params: {
+    chatId: string;
+    beforeId?: string;
+    limit?: number;
+  }) => Promise<Message[]>;
 }

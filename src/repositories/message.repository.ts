@@ -51,7 +51,36 @@ export function messageRepository(
     return message as Message;
   };
 
+  const getMessages = async ({
+    chatId,
+    beforeId,
+    limit = 30,
+  }: {
+    chatId: string;
+    beforeId?: string;
+    limit?: number;
+  }) => {
+    const messages = await prisma.message.findMany({
+      where: {
+        chatId,
+        ...(beforeId && {
+          id: {
+            lt: beforeId, // UUID v7 сравнивается как строка корректно
+          },
+        }),
+      },
+      orderBy: {
+        id: "desc", // UUID v7 сортируется по времени
+      },
+      take: limit,
+      select: messageSelect,
+    });
+
+    return messages.reverse() as Message[];
+  };
+
   return {
     create,
+    getMessages,
   };
 }

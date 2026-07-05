@@ -6,6 +6,7 @@ import { avatarTest } from "./tests/avatar.test.js";
 import { messageTest } from "./tests/message.test.js";
 import { searchTest } from "./tests/search.test.js";
 import { userTest } from "./tests/user.test.js";
+import { getMessagesTest } from "./tests/rest-api/getMessages.test.js";
 
 await test("App", { timeout: 10000 }, async (t) => {
   const app = await build(t);
@@ -15,4 +16,7 @@ await test("App", { timeout: 10000 }, async (t) => {
   await messageTest(app);
   await searchTest(app);
   await userTest(app);
+
+  // rest api
+  await getMessagesTest(app);
 });
