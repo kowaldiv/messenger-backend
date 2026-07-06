@@ -1,0 +1,10 @@
+node_modules
+dist
+.git
+.env
+*.log
+Dockerfile
+.dockerignore
+prisma/*.db
+prisma/*.sqlite
+/src/generated/prisma

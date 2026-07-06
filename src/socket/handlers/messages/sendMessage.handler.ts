@@ -16,7 +16,7 @@ export const sendMessageHandler = (
 
       const { message, chatId, isNewChat, chat } =
         await messageService.create(userId, chatIdOrUserId, text);
-        console.log(chat)
+        // console.log(chat)
 
       if (isNewChat && chat) {
         await sendNewChatToUser(io, userId, chat);
