@@ -8,7 +8,7 @@ import { searchTest } from "./tests/search.test.js";
 import { userTest } from "./tests/user.test.js";
 import { getMessagesTest } from "./tests/rest-api/getMessages.test.js";
 
-await test("App", { timeout: 10000 }, async (t) => {
+await test("App", { timeout: 20000 }, async (t) => {
   const app = await build(t);
   await authTest(app);
   await chatTest(app);

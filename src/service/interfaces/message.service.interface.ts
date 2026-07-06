@@ -26,8 +26,6 @@ export interface MessageService {
     {
       message: PublicMessage;
       chatId: string;
-      isNewChat: boolean;
-      invitedUserId?: string | null | undefined;
     }[]
   >;
   getMessages: (params: {

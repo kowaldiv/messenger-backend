@@ -70,10 +70,21 @@ export function chatService(
 
       const chatId = inviteLink.chat.id;
 
-      const chatInfo = await chatRepository.findById(chatId);
-      if (!chatInfo) throw new NotFoundError("CHAT_NOT_FOUND");
-      if (!(chatInfo.type === "group"))
-        throw new BadRequestError("YOU_CAN_JOIN_ONLY_IN_GROUP");
+      const fullChat = await chatRepository.findFullChatById(chatId, userId);
+      if (!fullChat) throw new NotFoundError("CHAT_NOT_FOUND");
+      if (fullChat.type === "private")
+        throw new BadRequestError("Ссылка устаревшая или плохая");
+      if (
+        fullChat.type === "channel" &&
+        fullChat.channelSettings.isPrivate === false
+      )
+        throw new BadRequestError("Ссылка устаревшая или плохая");
+      if (
+        fullChat.type === "channel" &&
+        fullChat.channelSettings.isPrivate === true
+      ) {
+        await inviteLinkRepository.remove(inviteLink.id);
+      }
 
       // Создаем сообщение о присоединении
       await messageRepository.create({
@@ -89,32 +100,25 @@ export function chatService(
       });
       await chatRepository.addParticipant(chatId, userId, "member");
 
-      const fullChat = await chatRepository.findFullChatById(chatId, userId);
       if (!fullChat) throw new NotFoundError("CHAT_NOT_FOUND_AFTER_JOIN");
       return transformChat(fullChat);
     } else if (options.chatId) {
       // Прямой вход по ID чата
       const chatId = options.chatId;
-      const chatInfo = await chatRepository.findById(chatId);
-      if (!chatInfo) throw new NotFoundError("CHAT_NOT_FOUND");
-      if (!(chatInfo.type === "channel"))
-        throw new BadRequestError("YOU_NEED_A_TOKEN");
+      const fullChat = await chatRepository.findFullChatById(chatId, userId);
+      if (!fullChat) throw new NotFoundError("CHAT_NOT_FOUND");
+      if (fullChat.type === "private")
+        throw new BadRequestError("Ссылка устаревшая или плохая");
+      if (fullChat.type === "group")
+        throw new BadRequestError("Ссылка устаревшая или плохая");
+      if (
+        fullChat.type === "channel" &&
+        fullChat.channelSettings.isPrivate === true
+      )
+        throw new BadRequestError("Ссылка устаревшая или плохая");
 
-      // Создаем сообщение о присоединении
-      await messageRepository.create({
-        chatId,
-        userId,
-        type: "joined",
-        metadata: {
-          userId: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          username: user.username,
-        },
-      });
       await chatRepository.addParticipant(chatId, userId, "member");
 
-      const fullChat = await chatRepository.findFullChatById(chatId, userId);
       if (!fullChat) throw new NotFoundError("CHAT_NOT_FOUND_AFTER_JOIN");
       return transformChat(fullChat);
     } else {

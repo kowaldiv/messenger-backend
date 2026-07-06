@@ -36,8 +36,15 @@ export function inviteLinkRepository(
     return inviteLink as unknown as PublicInviteLink;
   };
 
+  const remove = async (id: string) => {
+    await prisma.inviteLink.deleteMany({
+      where: { id },
+    });
+  };
+
   return {
     create,
     findBytoken,
+    remove,
   };
 }

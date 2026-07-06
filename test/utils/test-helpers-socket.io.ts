@@ -35,7 +35,7 @@ export async function createTestChat(
 
   // Создаем промис для ожидания ответа
   const createdChat = new Promise((resolve) => {
-    client.once("createdChat", resolve);
+    client.once("chat:new", resolve);
   });
 
   // Отправляем запрос на создание чата

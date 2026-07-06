@@ -41,7 +41,7 @@ export type InviteMessage = {
   chatId: string;
   userId: string | null;
   type: "invite";
-  metadata: PublicInviteLink;
+  metadata: PublicInviteLink | Pick<PublicInviteLink, "chat">;
   createdAt: Date;
   user: MessageUser | null;
 };

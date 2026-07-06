@@ -21,4 +21,5 @@ export interface InviteLinkRepository {
     chatId: string,
   ) => Promise<PublicInviteLink>;
   findBytoken: (token: string) => Promise<PublicInviteLink | null>;
+  remove: (id: string) => Promise<void>;
 }

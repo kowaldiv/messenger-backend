@@ -1,7 +1,6 @@
 import { Socket } from "socket.io";
 import { Server as SocketIOServer } from "socket.io";
 import { MessageService } from "../../../service/interfaces/message.service.interface.js";
-import { joinUserToChat } from "../helpers.js";
 import { AppError } from "../../../errors/index.js";
 
 export const inviteHandler = (
@@ -20,11 +19,7 @@ export const inviteHandler = (
         chatIds,
       );
 
-      messages.map(async ({ message, chatId, isNewChat, invitedUserId }) => {
-        if (isNewChat) {
-          await joinUserToChat(io, userId, chatId);
-          if (invitedUserId) await joinUserToChat(io, invitedUserId, chatId);
-        }
+      messages.map(async ({ message, chatId }) => {
         io.to(`chat:${chatId}`).emit("newMessage", {
           success: true,
           message,

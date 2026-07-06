@@ -3,6 +3,7 @@ import * as assert from "node:assert";
 import {
   createAndConnectUser,
   createTestChat,
+  sendMessageHelper,
 } from "../../utils/test-helpers-socket.io.js";
 
 export async function messageTest(app: any) {
@@ -26,13 +27,10 @@ export async function messageTest(app: any) {
 
       // Отправляем сообщение от первого пользователя второму
       const messageText = "Hello from test!";
-      client1.emit(
-        "sendMessage",
-        {
-          chatIdOrUserId: user2.id,
-          text: messageText,
-        },
-      );
+      client1.emit("sendMessage", {
+        chatIdOrUserId: user2.id,
+        text: messageText,
+      });
 
       // Ждем результаты
       const received1 = await receivedPromise1;
@@ -56,7 +54,23 @@ export async function messageTest(app: any) {
       const { client: client3, user: user3 } = await createAndConnectUser(app);
 
       const chat = await createTestChat(client1);
-      assert.strictEqual(chat.success, true, "Success should be true");
+      assert.ok(chat);
+
+      const newPrivateChat1 = new Promise((resolve) => {
+        client2.once("chat:new", resolve);
+      });
+      const newPrivateChat2 = new Promise((resolve) => {
+        client3.once("chat:new", resolve);
+      });
+
+      await sendMessageHelper(client1, user2.id);
+      await sendMessageHelper(client1, user3.id);
+
+      const privateChat1 = await newPrivateChat1 as any;
+      const privateChat2 = await newPrivateChat2 as any;
+
+      assert.ok(privateChat1.chat.id);
+      assert.ok(privateChat2.chat.id);
 
       // client1 ждет 2 сообщения
       const messagesForClient1: any[] = [];
@@ -78,7 +92,7 @@ export async function messageTest(app: any) {
         "invite",
         {
           destinationChatId: chat.chat.id,
-          chatIds: [user2.id, user3.id],
+          chatIds: [privateChat1.chat.id, privateChat2.chat.id],
         },
       );
 
@@ -87,7 +101,6 @@ export async function messageTest(app: any) {
         newMessage2,
         newMessage3,
       ])) as [any[], any, any];
-
       // Проверки
       assert.strictEqual(
         messages1.length,
@@ -102,16 +115,15 @@ export async function messageTest(app: any) {
       assert.ok(message2, "Client2 should receive a message");
       assert.ok(message3, "Client3 should receive a message");
       // При желании можно проверить chatId и у них
-
       const inviteTokenClient2 = message2.message.metadata.token;
       const inviteTokenClient3 = message3.message.metadata.token;
       // console.log(inviteTokenClient2, inviteTokenClient3);
 
       const newChat1 = new Promise((resolve) => {
-        client2.once("newChat", resolve);
+        client2.once("chat:new", resolve);
       });
       const newChat2 = new Promise((resolve) => {
-        client3.once("newChat", resolve);
+        client3.once("chat:new", resolve);
       });
 
       client2.emit(
@@ -169,7 +181,6 @@ export async function messageTest(app: any) {
       client1.close();
       client2.close();
       client3.close();
-    }, 
-  );
+    });
   });
 }

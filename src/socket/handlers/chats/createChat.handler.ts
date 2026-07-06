@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import { Server as SocketIOServer } from "socket.io";
 import { ChatService } from "../../../service/interfaces/chat.service.interface.js";
-import { joinUserToChat } from "../helpers.js";
+import { joinUserToChat, sendNewChatToUser } from "../helpers.js";
 import { AppError } from "../../../errors/index.js";
 
 export const createChatHandler = (
@@ -22,22 +22,16 @@ export const createChatHandler = (
           description: description,
           creatorId: userId,
         });
+        await sendNewChatToUser(io, userId, chat);
         await joinUserToChat(io, userId, chat.id);
-        socket.emit("createdChat", {
-          success: true,
-          chat: chat,
-        });
       } else {
         const chat = await chatService.create({
           type: "group",
           title: title,
           creatorId: userId,
         });
+        await sendNewChatToUser(io, userId, chat);
         await joinUserToChat(io, userId, chat.id);
-        socket.emit("createdChat", {
-          success: true,
-          chat: chat,
-        });
       }
     } catch (error) {
       console.error(error);
