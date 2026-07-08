@@ -3,6 +3,7 @@ import { messageSelect } from "./message.selects.js";
 import { avatarSelect, publicUserSelect } from "./user.selects.js";
 
 // Базовый select для участников чата
+// Базовый select для участников чата (БЕЗ unreadCount)
 export const chatParticipantSelect = {
   chatId: true,
   role: true,
@@ -58,13 +59,13 @@ export function getChatSelect(userId: string) {
     channelSettings: {
       select: channelSettingsSelect,
     },
-    // Всего ОДИН участник (не я) для private чатов, чтоб было какую аватарку и firstName и lastName отображать
+    // Получаем участников только для private и group чатов, исключая текущего пользователя
     chatParticipants: {
       where: {
         userId: { not: userId },
+        chat: { type: { in: ["private", "group"] } },
       },
       select: chatParticipantSelect,
-      take: 1,
     },
   } satisfies Prisma.ChatSelect;
 }

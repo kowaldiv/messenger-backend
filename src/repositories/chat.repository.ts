@@ -135,6 +135,43 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     return chats as unknown as Chat[];
   };
 
+  const findUserParticipantsInChats = async (
+    userId: string,
+    chatIds: string[],
+  ): Promise<ChatParticipant[]> => {
+    if (chatIds.length === 0) return [];
+    const ChatParticipants = prisma.chatParticipant.findMany({
+      where: {
+        userId,
+        chatId: { in: chatIds },
+      },
+      select: chatParticipantSelect, // ваш существующий select
+    });
+    return ChatParticipants as unknown as ChatParticipant[];
+  };
+
+  const findChatParticipants = async (
+    chatId: string,
+  ): Promise<ChatParticipant[]> => {
+    const chatParticipants = await prisma.chatParticipant.findMany({
+      where: {
+        chatId,
+      },
+      select: chatParticipantSelect, // ваш существующий select
+    });
+    return chatParticipants as unknown as ChatParticipant[];
+  };
+
+  const findUserParticipantInChat = async (
+    userId: string,
+    chatId: string,
+  ): Promise<ChatParticipant | null> => {
+    return prisma.chatParticipant.findFirst({
+      where: { userId, chatId },
+      select: chatParticipantSelect, // ваш существующий select
+    }) as unknown as ChatParticipant;
+  };
+
   const findFullChatById = async (chatId: string, userId: string) => {
     const chat = await prisma.chat.findUnique({
       where: { id: chatId },
@@ -197,6 +234,22 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     return chats as unknown as Chat[];
   };
 
+  // ------------ updateLastReadMessageTime --------------
+
+  const updateLastReadMessageTime = async (userId: string, chatId: string) => {
+    await prisma.chatParticipant.update({
+      where: {
+        chatId_userId: {
+          chatId,
+          userId,
+        },
+      },
+      data: {
+        lastReadMessageTime: new Date(), // 👈 текущее время
+      },
+    });
+  };
+
   return {
     create,
     addParticipant,
@@ -205,9 +258,13 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     userInChat,
     findById,
     findAllUserChats,
+    findChatParticipants,
+    findUserParticipantsInChats,
+    findUserParticipantInChat,
     findFullChatById,
     ensureUserIsChatOwner,
     haveUsersPrivateChat,
     findManyByPattern,
+    updateLastReadMessageTime,
   };
 }

@@ -1,4 +1,5 @@
 import { PublicChat } from "../transformers/chat.transformer.js";
+// import { ChatParticipantWithUnread } from "../transformers/participant.transformer.js";
 
 export type CreateChatDto =
   | { type: "channel"; title: string; description?: string; isPrivate: boolean }
@@ -17,6 +18,10 @@ export interface ChatService {
       chatId?: string | undefined;
     },
   ) => Promise<PublicChat>;
-  getChatParticipantsIds(chatId: string): Promise<string[]>;
+  // getChatParticipants(
+  //   chatId: string,
+  //   userId: string,
+  // ): Promise<ChatParticipantWithUnread[]>;
   getAllUserChats(userId: string): Promise<PublicChat[]>;
+  updateLastReadMessageTime(userId: string, chatId: string): Promise<void>;
 }

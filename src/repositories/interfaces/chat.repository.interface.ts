@@ -28,17 +28,39 @@ export interface CreateChannelDto {
 
 export interface ChatInfo {
   id: string;
-  type: ChatType;
+  type: "private" | "group" | "channel";
   createdAt: Date;
 }
 
-export interface Chat extends ChatInfo {
+interface PrivateChat {
+  id: string;
+  createdAt: Date;
+  type: "private";
+  messages: Message[];
+  chatParticipants: ChatParticipant[];
+}
+
+interface GroupChat {
+  id: string;
+  createdAt: Date;
+  type: "group";
+  title: string;
+  messages: Message[];
+  avatars: Avatar[];
+  chatParticipants: ChatParticipant[];
+}
+
+interface ChannelChat {
+  id: string;
+  createdAt: Date;
+  type: "channel";
   title: string;
   messages: Message[];
   avatars: Avatar[];
   channelSettings: { description: string | null; isPrivate: boolean };
-  chatParticipants: ChatParticipant[];
 }
+
+export type Chat = PrivateChat | GroupChat | ChannelChat;
 
 export type CreateChatDto =
   | CreatePrivateChatDto
@@ -57,29 +79,23 @@ export interface ChatRepository {
   userInChat(userId: string, chatId: string): Promise<ChatParticipant | null>;
   findById(id: string): Promise<ChatInfo | null>;
   findAllUserChats(userId: string): Promise<Chat[]>;
+  findChatParticipants(chatId: string): Promise<ChatParticipant[]>;
+  findUserParticipantsInChats(
+    userId: string,
+    chatIds: string[],
+  ): Promise<ChatParticipant[]>;
+  findUserParticipantInChat(
+    userId: string,
+    chatId: string,
+  ): Promise<ChatParticipant | null>;
   findFullChatById(chatId: string, userId: string): Promise<Chat | null>;
   ensureUserIsChatOwner(userId: string, chatId: string): Promise<boolean>;
-  haveUsersPrivateChat(userId1: string, userId2: string): Promise<Chat | null>
+  haveUsersPrivateChat(userId1: string, userId2: string): Promise<Chat | null>;
   findManyByPattern(
     userId: string,
     pattern: string,
     page?: number,
     limit?: number,
   ): Promise<Chat[]>;
+  updateLastReadMessageTime(userId: string, chatId: string): Promise<void>;
 }
-
-// export type PublicChat = {
-//   id: string;
-//   type: ChatType;
-//   title: string | null;
-//   createdAt: Date;
-// } & (
-//   | { type: "private"; chatParticipants: ChatParticipant[] }
-//   | { type: "group"; avatars: Avatar[]; chatParticipants: ChatParticipant[] }
-//   | {
-//       type: "channel";
-//       avatars: Avatar[];
-//       channelSettings: { description: string | null; isPrivate: boolean };
-//       chatParticipants: ChatParticipant[];
-//     }
-// );

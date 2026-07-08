@@ -24,6 +24,7 @@ export async function chatTest(app: any) {
 
       // Ждем ответа от сервера
       const data = (await joinedAllChats) as any;
+      // console.log(data.chats[0].myParticipant);
       assert.strictEqual(data.success, true, "Success should be true");
       client.close();
     });
@@ -35,18 +36,16 @@ export async function chatTest(app: any) {
         client.once("chat:new", resolve);
       });
 
-      client.emit(
-        "createChat",
-        {
-          type: "channel",
-          title: "My Test Channel",
-          description: "Test description",
-          isPrivate: false,
-        },
-      );
-
+      client.emit("createChat", {
+        type: "channel",
+        title: "My Test Channel",
+        description: "Test description",
+        isPrivate: false,
+      });
       // Ждем ответа от сервера
+
       const data = (await createdChat) as any;
+      // console.log(JSON.stringify(data, null, 1))
       assert.ok(data);
       client.close();
     });

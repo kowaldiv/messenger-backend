@@ -11,10 +11,13 @@ import { config } from "../config/index.js";
 import { InviteLinkRepository } from "../repositories/interfaces/invite-link.repository.interface.js";
 import { normalizeMessage } from "./transformers/message.transformer.js";
 import { transformChat } from "./transformers/chat.transformer.js";
+import { UnreadRepository } from "../repositories/interfaces/unread.repository.interface.js";
+import { participantTransformer } from "./transformers/participant.transformer.js";
 
 export function messageService(
   messageRepository: MessageRepository,
   chatRepository: ChatRepository,
+  unreadRepository: UnreadRepository,
   userRepository: UserRepository,
   inviteLinkRepository: InviteLinkRepository,
 ): MessageService {
@@ -117,11 +120,32 @@ export function messageService(
         targetChatId,
         userId,
       );
+      if (!fullChat) throw new NotFoundError("Чат не найден");
+
+      const userParticipant = await chatRepository.findUserParticipantInChat(
+        userId,
+        fullChat.id,
+      );
+      if (!userParticipant)
+        throw new NotFoundError("Пользватель не найден в чате");
+      const unread = await unreadRepository.getUnreadCount(
+        userParticipant.user.id,
+        userParticipant.chatId,
+      );
+      const userParticipantWithUnread = participantTransformer(
+        userParticipant,
+        unread,
+      );
+
+      const unreadCountsForChat = await unreadRepository.getUnreadCountsForChat(
+        fullChat.id,
+      );
+
       return {
         message: normalizeMessage(message),
         isNewChat: true,
         chatId: targetChatId,
-        chat: fullChat ? transformChat(fullChat) : undefined,
+        chat: transformChat(fullChat, unreadCountsForChat, userParticipantWithUnread),
       };
     }
 

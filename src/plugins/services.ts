@@ -47,6 +47,7 @@ export default fp(
     const chatSvc = chatService(
       repositories.chat,
       repositories.user,
+      repositories.unread,
       repositories.inviteLink,
       repositories.message,
     );
@@ -54,11 +55,16 @@ export default fp(
     const messageSvc = messageService(
       repositories.message,
       repositories.chat,
+      repositories.unread,
       repositories.user,
       repositories.inviteLink,
     );
 
-    const searchSvc = searchService(repositories.user, repositories.chat);
+    const searchSvc = searchService(
+      repositories.user,
+      repositories.chat,
+      repositories.unread,
+    );
 
     const userSvc = userService(repositories.user, repositories.userQuery);
 
