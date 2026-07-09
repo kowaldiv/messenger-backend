@@ -116,8 +116,16 @@ export function authController(authService: AuthService) {
 
     await authService.logout(refreshToken);
 
-    reply.clearCookie("refresh_token", { path: "/" });
-    reply.clearCookie("access_token", { path: "/" });
+    const clearOptions = {
+      path: "/",
+      secure: true,
+      sameSite: "none" as const,
+      partitioned: true,
+    };
+
+    reply.clearCookie("refresh_token", clearOptions);
+    reply.clearCookie("access_token", clearOptions);
+
     return reply.status(200).send();
   };
 
