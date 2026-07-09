@@ -21,7 +21,7 @@ export function chatService(
   const create = async (data: CreateChatWithCreator) => {
     const isUserExist = await userRepository.existsById(data.creatorId);
     if (!isUserExist) {
-      throw new NotFoundError("USER_NOT_FOUND");
+      throw new NotFoundError("Пользователь не найден!");
     }
 
     if (data.type === "channel") {
@@ -117,12 +117,18 @@ export function chatService(
       const inviteLink = await inviteLinkRepository.findBytoken(
         options.inviteLinkToken,
       );
-      if (!inviteLink) throw new NotFoundError("INVITE_LINK_BAD_OR_EXPIRED");
+      if (!inviteLink) throw new NotFoundError("Ссылка устаревшая или плохая");
 
       const chatId = inviteLink.chat.id;
 
+      const userParticipantBeforeJoin =
+        await chatRepository.findUserParticipantInChat(userId, chatId);
+      if (userParticipantBeforeJoin) {
+        throw new BadRequestError("Пользователь уже в чате!");
+      }
+
       const fullChat = await chatRepository.findFullChatById(chatId, userId);
-      if (!fullChat) throw new NotFoundError("CHAT_NOT_FOUND");
+      if (!fullChat) throw new NotFoundError("Чат не найден!");
       if (fullChat.type === "private")
         throw new BadRequestError("Ссылка устаревшая или плохая");
       if (
@@ -151,7 +157,8 @@ export function chatService(
       });
       await chatRepository.addParticipant(chatId, userId, "member");
 
-      if (!fullChat) throw new NotFoundError("CHAT_NOT_FOUND_AFTER_JOIN");
+      if (!fullChat)
+        throw new NotFoundError("После присоединения чат не был найден!");
 
       const userParticipant = await chatRepository.findUserParticipantInChat(
         userId,
@@ -179,6 +186,13 @@ export function chatService(
     } else if (options.chatId) {
       // Прямой вход по ID чата
       const chatId = options.chatId;
+
+      const userParticipantBeforeJoin =
+        await chatRepository.findUserParticipantInChat(userId, chatId);
+      if (userParticipantBeforeJoin) {
+        throw new BadRequestError("Пользователь уже в чате!");
+      }
+
       const fullChat = await chatRepository.findFullChatById(chatId, userId);
       if (!fullChat) throw new NotFoundError("CHAT_NOT_FOUND");
       if (fullChat.type === "private")

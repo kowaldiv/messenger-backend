@@ -9,6 +9,7 @@ export interface ChatParticipant {
   chatId: string;
   role: ParticipantRole;
   lastReadMessageTime: Date;
+  joinedAt: Date;
   user: PublicUser;
 }
 

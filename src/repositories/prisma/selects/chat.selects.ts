@@ -8,6 +8,7 @@ export const chatParticipantSelect = {
   chatId: true,
   role: true,
   lastReadMessageTime: true,
+  joinedAt: true,
   user: {
     select: publicUserSelect,
   },
