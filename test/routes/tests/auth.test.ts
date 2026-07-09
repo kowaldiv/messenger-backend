@@ -126,7 +126,7 @@ export async function authTest(app: any) {
       assert.ok(data.length > 0);
     });
 
-    await test("POST /api/auth/revoke-session - success", async () => {
+    await test("DELETE /api/auth/sessions/:tokenId - success", async () => {
       const { accessToken } = await registerTestUser(app);
 
       // First get sessions to get a tokenId
@@ -143,13 +143,10 @@ export async function authTest(app: any) {
 
       // Revoke the session
       const res = await app.inject({
-        method: "POST",
-        url: "/auth/revoke-session",
+        method: "DELETE",
+        url: `/auth/sessions/${tokenId}`,
         cookies: {
           access_token: accessToken,
-        },
-        payload: {
-          tokenId: tokenId,
         },
       });
 

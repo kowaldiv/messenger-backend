@@ -81,11 +81,11 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     fastify.controllers.auth.getSessions,
   );
 
-  fastify.post(
-    "/revoke-session",
+  fastify.delete(
+    "/sessions/:tokenId",
     {
       schema: {
-        body: {
+        params: {
           type: "object",
           properties: {
             tokenId: { type: "string" },

@@ -43,7 +43,8 @@
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.21.0",
     "sharp": "^0.35.1",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "ua-parser-js": "^2.0.10"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -53,6 +54,7 @@
     "@types/node": "^25.9.3",
     "@types/pg": "^8.20.0",
     "@types/socket.io": "^3.0.1",
+    "@types/ua-parser-js": "^0.7.39",
     "c8": "^11.0.0",
     "concurrently": "^9.0.0",
     "fastify-tsconfig": "^3.0.0",

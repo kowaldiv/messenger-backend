@@ -27,18 +27,20 @@ export function authService(
     username,
     firstName,
     lastName,
+    fingerprint,
   }: {
     email: string;
     password: string;
     username: string;
     firstName: string;
     lastName?: string;
+    fingerprint: string;
   }) => {
     // проверяем есть ли уже пользователи с таким email или username
     const exsistingEmail = await userRepository.existsByEmail(email);
-    if (exsistingEmail) throw new ConflictError("EMAIL_ALREADY_EXISTS");
+    if (exsistingEmail) throw new ConflictError("Почта уже занята");
     const exsistingUsername = await userRepository.existsByUsername(username);
-    if (exsistingUsername) throw new ConflictError("USERNAME_ALREADY_EXISTS");
+    if (exsistingUsername) throw new ConflictError("Username уже занят");
     // создаем хеш пароля
     const passwordHash = await bcrypt.hash(password, 10);
     // создаем пользователя
@@ -66,7 +68,7 @@ export function authService(
       userId: user.id,
       token: refreshToken,
       tokenType: "refresh",
-      fingerprint: "",
+      fingerprint: fingerprint,
       expiresAt,
     });
     // возвращаем токен и пользователя
@@ -76,27 +78,32 @@ export function authService(
   const login = async ({
     email,
     password,
+    fingerprint,
   }: {
     email: string;
     password: string;
+    fingerprint: string;
   }) => {
     // проверяем есть ли такой пользователь и правильный ли пароль
     const userWithCredentials =
       await authRepository.findByEmailWithCredentials(email);
     if (!userWithCredentials)
-      throw new BadRequestError("INVALID_CREDENTIALS");
+      throw new BadRequestError("Неверный логин или пароль!");
     const isValidPassword = await bcrypt.compare(
       password,
       userWithCredentials.passwordHash,
     );
     if (!isValidPassword) {
-      throw new BadRequestError("INVALID_CREDENTIALS");
+      throw new BadRequestError("Неверный логин или пароль!");
     }
     // достаем информацию о пользователе
     const user = await userQueryRepository.findByIdWithAvatars(
       userWithCredentials.id,
     );
-    if (!user) throw new Error("User not found after authentication");
+    if (!user)
+      throw new Error(
+        "После авторизации пользователь не был найден! Войдите в аккаунт еще раз",
+      );
     // создаем токены
     const nonce = crypto.randomBytes(16).toString("hex");
     const accessToken = instance.jwt.sign(
@@ -114,7 +121,7 @@ export function authService(
       userId: user.id,
       token: refreshToken,
       tokenType: "refresh",
-      fingerprint: "",
+      fingerprint: fingerprint,
       expiresAt,
     });
     // возвращаем пользователя и токен
@@ -134,7 +141,8 @@ export function authService(
     );
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + config.RESET_TOKEN_EXPIRES_HOURS);
-    await tokenRepository.createToken({ // const resetToken = 
+    await tokenRepository.createToken({
+      // const resetToken =
       userId: user.id,
       token,
       tokenType: "reset_password",
@@ -156,7 +164,7 @@ export function authService(
   }) => {
     // проверяем токен что существует
     const validToken = await tokenRepository.isTokenValidByToken(token);
-    if (!validToken) throw new NotFoundError("LINK_IS_INCORRECT_OR_OUTDATED");
+    if (!validToken) throw new NotFoundError("Ссылка устаревшая или сломаная!");
     // создаем хеш пароля и сохраняем
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await userRepository.updatePassword(validToken.userId, passwordHash);
@@ -167,7 +175,7 @@ export function authService(
   const refreshToken = async (refreshToken: string) => {
     // проверяем токен что существует
     const validToken = await tokenRepository.isTokenValidByToken(refreshToken);
-    if (!validToken) throw new UnauthorizedError("INVALID_REFRESH_TOKEN");
+    if (!validToken) throw new UnauthorizedError("Сессия устарела! Вам нужно войти в аккаунт");
     // создаем access token и новый refresh token
     const nonce = crypto.randomBytes(16).toString("hex");
     const accessToken = instance.jwt.sign(

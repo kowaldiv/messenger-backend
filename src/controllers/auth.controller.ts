@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { UnauthorizedError } from "../errors/index.js";
 import { AuthService } from "../service/interfaces/auth.service.interface.js";
 import { config } from "../config/index.js";
+import { UAParser } from "ua-parser-js";
 
 export function authController(authService: AuthService) {
   const register = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -12,12 +13,26 @@ export function authController(authService: AuthService) {
       firstName: string;
       lastName: string;
     };
+
+    const userAgent = request.headers["user-agent"] || "";
+    const parser = new UAParser(userAgent);
+    const result = parser.getResult();
+
+    // Формируем читаемый fingerprint
+    const device =
+      result.device.model || result.device.type || "Unknown Device";
+    const browser = result.browser.name || "Unknown Browser";
+    const os = result.os.name || "Unknown OS";
+
+    const fingerprint = `${device} • ${browser} • ${os}`;
+
     const { user, refreshToken, accessToken } = await authService.register({
       email,
       password,
       username,
       firstName,
       lastName,
+      fingerprint,
     });
     reply.setCookie("access_token", accessToken, {
       httpOnly: true,
@@ -43,9 +58,23 @@ export function authController(authService: AuthService) {
       email: string;
       password: string;
     };
+
+    const userAgent = request.headers["user-agent"] || "";
+    const parser = new UAParser(userAgent);
+    const result = parser.getResult();
+
+    // Формируем читаемый fingerprint
+    const device =
+      result.device.model || result.device.type || "Unknown Device";
+    const browser = result.browser.name || "Unknown Browser";
+    const os = result.os.name || "Unknown OS";
+
+    const fingerprint = `${device} • ${browser} • ${os}`;
+
     const { user, refreshToken, accessToken } = await authService.login({
       email,
       password,
+      fingerprint,
     });
     reply.setCookie("access_token", accessToken, {
       httpOnly: true,
@@ -89,7 +118,7 @@ export function authController(authService: AuthService) {
 
   const refreshToken = async (request: FastifyRequest, reply: FastifyReply) => {
     const refreshToken = request.cookies?.refresh_token;
-    if (!refreshToken) throw new UnauthorizedError("NO_REFRESH_TOKEN");
+    if (!refreshToken) throw new UnauthorizedError("Сессия устарела! Вам нужно войти в акканут");
     const { accessToken, newRefreshToken } =
       await authService.refreshToken(refreshToken);
     reply.setCookie("access_token", accessToken, {
@@ -139,7 +168,7 @@ export function authController(authService: AuthService) {
     request: FastifyRequest,
     reply: FastifyReply,
   ) => {
-    const { tokenId } = request.body as { tokenId: string };
+    const { tokenId } = request.params as { tokenId: string };
     const userId = request.currentUser.userId;
 
     await authService.revokeSession(tokenId, userId);
