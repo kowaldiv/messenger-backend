@@ -24,7 +24,7 @@ export function avatarController(avatarService: AvatarService) {
       const avatar = await avatarService.uploadUserAvatar(userId, {
         file: {
           buffer,
-          minetype: data.mimetype,
+          mimetype: data.mimetype,
           size: data.file.bytesRead,
           filename: data.filename,
         },
@@ -83,7 +83,7 @@ export function avatarController(avatarService: AvatarService) {
       const avatar = await avatarService.uploadChatAvatar(userId, chatId, {
         file: {
           buffer,
-          minetype: data.mimetype,
+          mimetype: data.mimetype,
           size: data.file.bytesRead,
           filename: data.filename,
         },

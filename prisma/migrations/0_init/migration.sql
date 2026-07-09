@@ -129,12 +129,12 @@ create table
 
 create table
   message_reactions (
-    id UUID primary key default uuidv7 (),
     message_id UUID not null,
     user_id UUID,
     emoji varchar(10) not null,
+    primary key (message_id, user_id),
     foreign key (message_id) references messages (id) on delete cascade,
-    foreign key (user_id) references users (id) on delete set null
+    foreign key (user_id) references users (id) on delete cascade
   );
 
 create table

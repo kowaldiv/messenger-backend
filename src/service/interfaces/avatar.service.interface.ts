@@ -3,7 +3,7 @@ import { Avatar } from "../../repositories/interfaces/avatar.repository.interfac
 export interface uploadAvatarInput {
   file: {
     buffer: Buffer;
-    minetype: string;
+    mimetype: string;
     size: number;
     filename: string;
   };

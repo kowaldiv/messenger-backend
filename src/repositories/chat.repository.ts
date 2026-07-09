@@ -94,7 +94,7 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     return chat !== null;
   };
 
-  const userInChat = async (userId: string, chatId: string) => {
+  const userInChat = async (chatId: string, userId: string) => {
     const participant = await prisma.chatParticipant.findFirst({
       where: {
         chatId,

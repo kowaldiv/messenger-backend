@@ -15,7 +15,6 @@ const messageUserSelect = {
 } satisfies Prisma.UserSelect;
 
 const messageReactionsSelect = {
-  id: true,
   messageId: true,
   userId: true,
   emoji: true,

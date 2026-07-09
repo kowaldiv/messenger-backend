@@ -52,7 +52,7 @@ export async function messageTest(app: any) {
       const { client: client1 } = await createAndConnectUser(app);
       const { client: client2, user: user2 } = await createAndConnectUser(app);
       const { client: client3, user: user3 } = await createAndConnectUser(app);
-
+      
       const chat = await createTestChat(client1);
       assert.ok(chat);
 
@@ -95,7 +95,6 @@ export async function messageTest(app: any) {
           chatIds: [privateChat1.chat.id, privateChat2.chat.id],
         },
       );
-
       const [messages1, message2, message3] = (await Promise.all([
         newMessage1,
         newMessage2,
@@ -110,7 +109,6 @@ export async function messageTest(app: any) {
       // Дополнительно: проверяем, что оба сообщения относятся к нужному чату
       assert.strictEqual(messages1[0].message.metadata.chat.id, chat.chat.id);
       assert.strictEqual(messages1[1].message.metadata.chat.id, chat.chat.id);
-
       // Проверяем, что client2 и client3 получили по одному сообщению
       assert.ok(message2, "Client2 should receive a message");
       assert.ok(message3, "Client3 should receive a message");
@@ -118,7 +116,6 @@ export async function messageTest(app: any) {
       const inviteTokenClient2 = message2.message.metadata.token;
       const inviteTokenClient3 = message3.message.metadata.token;
       // console.log(inviteTokenClient2, inviteTokenClient3);
-
       const newChat1 = new Promise((resolve) => {
         client2.once("chat:new", resolve);
       });

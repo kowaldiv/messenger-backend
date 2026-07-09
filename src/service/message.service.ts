@@ -145,7 +145,11 @@ export function messageService(
         message: normalizeMessage(message),
         isNewChat: true,
         chatId: targetChatId,
-        chat: transformChat(fullChat, unreadCountsForChat, userParticipantWithUnread),
+        chat: transformChat(
+          fullChat,
+          unreadCountsForChat,
+          userParticipantWithUnread,
+        ),
       };
     }
 
@@ -175,8 +179,8 @@ export function messageService(
     }
     // проверяем, что пользователь в чате назначения
     const userInDestinationChat = await chatRepository.userInChat(
-      userId,
       destinationChatId,
+      userId,
     );
     if (!userInDestinationChat) {
       throw new ConflictError("USER_NOT_IN_CHAT");
@@ -195,9 +199,9 @@ export function messageService(
           );
         }
         // проверяем, что пользователь в чате
-        const userInChat = await chatRepository.userInChat(userId, chat.id);
+        const userInChat = await chatRepository.userInChat(chat.id, userId);
         if (!userInChat) {
-          throw new ConflictError(`USER_NOT_IN_CHAT: ${chat.id}`);
+          throw new ConflictError(`USER_NOT_IN_CHAT`);
         }
         if (chat.type === "channel") {
           const isOwner = await chatRepository.ensureUserIsChatOwner(
