@@ -114,7 +114,7 @@ model Message {
   editedAt         DateTime          @default(now()) @map("edited_at") @db.Timestamp(6)
   attachments      Attachmenst[]
   messageReactions MessageReaction[]
-  chat             Chat?             @relation(fields: [chatId], references: [id], onUpdate: NoAction)
+  chat             Chat?             @relation(fields: [chatId], references: [id], onUpdate: NoAction, onDelete: Cascade)
   user             User?             @relation(fields: [userId], references: [id], onUpdate: NoAction)
 
   replyTo Message?  @relation("ReplyRelation", fields: [replyToId], references: [id], onUpdate: NoAction)

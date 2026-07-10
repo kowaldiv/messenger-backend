@@ -17,7 +17,10 @@ export interface AuthService {
   }): Promise<{ user: PublicUser; refreshToken: string; accessToken: string }>;
   forgotPassword(email: string): Promise<void>;
   resetPassword(data: { token: string; newPassword: string }): Promise<void>;
-  refreshToken(refreshToken: string): Promise<{
+  refreshToken(
+    refreshToken: string,
+    fingerprint: string,
+  ): Promise<{
     accessToken: string;
     newRefreshToken: string;
   }>;

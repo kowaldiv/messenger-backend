@@ -77,7 +77,7 @@ export interface ChatRepository {
   ) => Promise<ChatParticipant>;
   getChatParticipantsIds: (chatId: string) => Promise<string[]>;
   isChatExists(id: string): Promise<boolean>;
-  userInChat(userId: string, chatId: string): Promise<ChatParticipant | null>;
+  userInChat(chatId: string, userId: string): Promise<ChatParticipant | null>;
   findById(id: string): Promise<ChatInfo | null>;
   findAllUserChats(userId: string): Promise<Chat[]>;
   findChatParticipants(chatId: string): Promise<ChatParticipant[]>;
@@ -99,4 +99,9 @@ export interface ChatRepository {
     limit?: number,
   ): Promise<Chat[]>;
   updateLastReadMessageTime(userId: string, chatId: string): Promise<void>;
+  deleteChat(chatId: string): Promise<void>;
+  deleteParticipant(chatId: string, userId: string): Promise<void>;
+  transferOwnership: (chatId: string,
+    currentOwnerId: string,
+    newOwnerId: string,) => Promise<void>
 }

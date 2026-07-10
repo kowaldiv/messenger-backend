@@ -250,6 +250,57 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     });
   };
 
+  // --------------- Выход из чата и удаление чата -----------------
+
+  const deleteChat = async (chatId: string) => {
+    await prisma.chat.delete({
+      where: { id: chatId },
+    });
+  };
+
+  const deleteParticipant = async (chatId: string, userId: string) => {
+    await prisma.chatParticipant.delete({
+      where: {
+        chatId_userId: { chatId, userId },
+      },
+    });
+  };
+
+  // ----------- назначения нового пользователя владельцем ------------------
+
+  const transferOwnership = async (
+    chatId: string,
+    currentOwnerId: string,
+    newOwnerId: string,
+  ) => {
+    await prisma.$transaction([
+      // Снимаем owner с текущего владельца и назначаем member
+      prisma.chatParticipant.update({
+        where: {
+          chatId_userId: {
+            chatId,
+            userId: currentOwnerId,
+          },
+        },
+        data: {
+          role: "member",
+        },
+      }),
+      // Назначаем нового владельца
+      prisma.chatParticipant.update({
+        where: {
+          chatId_userId: {
+            chatId,
+            userId: newOwnerId,
+          },
+        },
+        data: {
+          role: "owner",
+        },
+      }),
+    ]);
+  };
+
   return {
     create,
     addParticipant,
@@ -266,5 +317,8 @@ export function chatRepository(instance: FastifyInstance): ChatRepository {
     haveUsersPrivateChat,
     findManyByPattern,
     updateLastReadMessageTime,
+    deleteChat,
+    deleteParticipant,
+    transferOwnership,
   };
 }

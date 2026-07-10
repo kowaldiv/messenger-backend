@@ -9,6 +9,7 @@ import {
   CreateChatWithCreator,
 } from "./interfaces/chat.service.interface.js";
 import { transformChat } from "./transformers/chat.transformer.js";
+import { normalizeMessage } from "./transformers/message.transformer.js";
 import { participantTransformer } from "./transformers/participant.transformer.js";
 
 export function chatService(
@@ -144,7 +145,7 @@ export function chatService(
       }
 
       // Создаем сообщение о присоединении
-      await messageRepository.create({
+      const newMessage = await messageRepository.create({
         chatId,
         userId,
         type: "joined",
@@ -178,11 +179,15 @@ export function chatService(
         fullChat.id,
       );
 
-      return transformChat(
-        fullChat,
-        unreadCountsForChat,
-        userParticipantWithUnread,
-      );
+      return {
+        chat: transformChat(
+          fullChat,
+          unreadCountsForChat,
+          userParticipantWithUnread,
+        ),
+        newParticipant: userParticipantWithUnread,
+        newMessage: normalizeMessage(newMessage),
+      };
     } else if (options.chatId) {
       // Прямой вход по ID чата
       const chatId = options.chatId;
@@ -215,6 +220,7 @@ export function chatService(
       );
       if (!userParticipant)
         throw new NotFoundError("Пользватель не найден в чате");
+
       const unread = await unreadRepository.getUnreadCount(
         userParticipant.user.id,
         userParticipant.chatId,
@@ -227,11 +233,14 @@ export function chatService(
         fullChat.id,
       );
 
-      return transformChat(
-        fullChat,
-        unreadCountsForChat,
-        userParticipantWithUnread,
-      );
+      return {
+        chat: transformChat(
+          fullChat,
+          unreadCountsForChat,
+          userParticipantWithUnread,
+        ),
+        newParticipant: userParticipantWithUnread,
+      };
     } else {
       throw new BadRequestError("EITHER_INVITE_LINK_OR_CHAT_ID_REQUIRED");
     }
@@ -299,11 +308,125 @@ export function chatService(
     await chatRepository.updateLastReadMessageTime(userId, chatId);
   };
 
+  const deleteChat = async (chatId: string, userId: string) => {
+    const chat = await chatRepository.findById(chatId);
+    if (!chat) {
+      throw new NotFoundError("Чат не найден");
+    }
+
+    const participant = await chatRepository.userInChat(chatId, userId);
+    if (!participant) {
+      throw new NotFoundError("Вы не являетесь участником чата");
+    }
+
+    if (participant.role !== "owner") {
+      throw new BadRequestError("Только владелец может удалить чат");
+    }
+
+    await chatRepository.deleteChat(chatId);
+  };
+
+  const leaveFromChat = async (userId: string, chatId: string) => {
+    const participant = await chatRepository.userInChat(chatId, userId);
+    if (!participant) {
+      throw new NotFoundError("Вы не являетесь участником чата");
+    }
+
+    if (participant.role === "owner") {
+      throw new BadRequestError(
+        "Владелец не может выйти из чата. Передайте владельца другому пользователю или удалите чат",
+      );
+    }
+
+    await chatRepository.deleteParticipant(chatId, userId);
+  };
+
+  const transferOwnership = async (
+    chatId: string,
+    currentOwnerId: string,
+    newOwnerId: string,
+  ) => {
+    const chat = await chatRepository.findById(chatId);
+    if (!chat) {
+      throw new NotFoundError("Чат не найден");
+    }
+
+    const participant = await chatRepository.userInChat(currentOwnerId, chatId);
+    if (!participant) {
+      throw new NotFoundError("Вы не являетесь участником чата");
+    }
+
+    if (participant.role !== "owner") {
+      throw new BadRequestError("Только владелец может передать права");
+    }
+
+    const newParticipant = await chatRepository.userInChat(newOwnerId, chatId);
+    if (!newParticipant) {
+      throw new NotFoundError("Пользователь не является участником чата");
+    }
+
+    await chatRepository.transferOwnership(chatId, currentOwnerId, newOwnerId);
+  };
+
+  const kickUserFromChat = async (
+    chatId: string,
+    adminId: string,
+    targetUserId: string,
+  ) => {
+    const chat = await chatRepository.findById(chatId);
+    if (!chat) {
+      throw new NotFoundError("Чат не найден");
+    }
+
+    const adminParticipant = await chatRepository.userInChat(adminId, chatId);
+    if (!adminParticipant) {
+      throw new NotFoundError("Вы не являетесь участником чата");
+    }
+
+    if (adminParticipant.role === "member") {
+      throw new BadRequestError(
+        "Только администратор может исключать пользователей",
+      );
+    }
+
+    if (adminId === targetUserId) {
+      throw new BadRequestError("Вы не можете исключить себя из чата");
+    }
+
+    const targetParticipant = await chatRepository.userInChat(
+      targetUserId,
+      chatId,
+    );
+    if (!targetParticipant) {
+      throw new NotFoundError("Пользователь не является участником чата");
+    }
+
+    // Используем явную проверку через переменную
+    const targetRole = targetParticipant.role;
+
+    if (targetRole === "owner") {
+      throw new BadRequestError(
+        "Нельзя исключить владельца чата. Сначала передайте права владельца.",
+      );
+    }
+
+    if (adminParticipant.role === "moderator" && targetRole === "moderator") {
+      throw new BadRequestError(
+        "Модератор не может исключать других модераторов",
+      );
+    }
+
+    await chatRepository.deleteParticipant(chatId, targetUserId);
+  };
+
   return {
     create,
     joinChat,
-    // getChatParticipants,
     getAllUserChats,
     updateLastReadMessageTime,
+    leaveFromChat,
+    deleteChat,
+    transferOwnership,
+    kickUserFromChat,
   };
 }

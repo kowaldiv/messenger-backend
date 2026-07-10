@@ -14,12 +14,26 @@ export const joinChatHandler = (
       const userId = socket.data.currentUser.userId;
       const { inviteLinkToken, chatId } = data;
 
-      const chat = await chatService.joinChat(userId, {
-        inviteLinkToken,
-        chatId,
-      });
+      const { chat, newParticipant, newMessage } = await chatService.joinChat(
+        userId,
+        {
+          inviteLinkToken,
+          chatId,
+        },
+      );
+      console.log('aaaaaaaaaaaaaaaaaaa')
+      if (chat.type === "group") {
+        console.log('bbbbbbbbbbbbbbbb')
+        io.to(`chat:${chat.id}`).emit("newMessage", {
+          success: true,
+          message: newMessage,
+        });
+        io.to(`chat:${chat.id}`).emit("chat:userJoined", {
+          chatParticipant: newParticipant,
+        });
+      }
       await joinUserToChat(io, userId, chat.id);
-      await sendNewChatToUser(io, userId, chat)
+      await sendNewChatToUser(io, userId, chat);
     } catch (error) {
       console.error(error);
       if (error instanceof AppError) {

@@ -172,7 +172,7 @@ export function authService(
     await tokenRepository.deleteTokenByToken(token);
   };
 
-  const refreshToken = async (refreshToken: string) => {
+  const refreshToken = async (refreshToken: string, fingerprint: string) => {
     // проверяем токен что существует
     const validToken = await tokenRepository.isTokenValidByToken(refreshToken);
     if (!validToken) throw new UnauthorizedError("Сессия устарела! Вам нужно войти в аккаунт");
@@ -193,7 +193,7 @@ export function authService(
       userId: validToken.userId,
       token: newRefreshToken,
       tokenType: "refresh",
-      fingerprint: "test",
+      fingerprint: fingerprint,
       expiresAt,
     });
     // удаляем старый токен

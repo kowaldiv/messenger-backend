@@ -35,7 +35,7 @@ export function messageService(
     // проверяем отправителя
     const senderExists = await userRepository.existsById(userId);
     if (!senderExists) {
-      throw new NotFoundError("USER_NOT_FOUND");
+      throw new NotFoundError("Пользователь не найден");
     }
 
     // проверяем чат
@@ -73,11 +73,11 @@ export function messageService(
     // чат не найден - проверяем, может это ID пользователя
     const recipientExists = await userRepository.findById(chatIdOrUserId);
     if (!recipientExists) {
-      throw new NotFoundError("USER_AND_CHAT_NOT_FOUND");
+      throw new NotFoundError("Пользователь и Чат на найдены");
     }
 
     if (userId === chatIdOrUserId) {
-      throw new Error("CANNOT_SEND_MESSAGE_TO_SELF");
+      throw new Error("Нельзя отправить сообщение себе");
     }
 
     // Проверяем, есть ли уже приватный чат между пользователями
@@ -116,39 +116,66 @@ export function messageService(
 
     // Если чат новый — возвращаем полные данные
     if (isNewChat) {
-      const fullChat = await chatRepository.findFullChatById(
+      const fullChatForSender = await chatRepository.findFullChatById(
         targetChatId,
         userId,
       );
-      if (!fullChat) throw new NotFoundError("Чат не найден");
-
-      const userParticipant = await chatRepository.findUserParticipantInChat(
-        userId,
-        fullChat.id,
+      const fullChatForReceiver = await chatRepository.findFullChatById(
+        targetChatId,
+        chatIdOrUserId,
       );
-      if (!userParticipant)
+      if (!fullChatForSender || !fullChatForReceiver)
+        throw new NotFoundError("Чат не найден");
+
+      const userParticipantSender =
+        await chatRepository.findUserParticipantInChat(
+          userId,
+          fullChatForSender.id,
+        );
+      const userParticipantReceiver =
+        await chatRepository.findUserParticipantInChat(
+          userId,
+          fullChatForReceiver.id,
+        );
+      if (!userParticipantSender || !userParticipantReceiver)
         throw new NotFoundError("Пользватель не найден в чате");
-      const unread = await unreadRepository.getUnreadCount(
-        userParticipant.user.id,
-        userParticipant.chatId,
-      );
-      const userParticipantWithUnread = participantTransformer(
-        userParticipant,
-        unread,
-      );
 
-      const unreadCountsForChat = await unreadRepository.getUnreadCountsForChat(
-        fullChat.id,
+      const senderUnread = await unreadRepository.getUnreadCount(
+        userParticipantSender.user.id,
+        userParticipantSender.chatId,
+      );
+      const userParticipantSenderWithUnread = participantTransformer(
+        userParticipantSender,
+        senderUnread,
+      );
+      const senderUnreadCountsForChat = await unreadRepository.getUnreadCountsForChat(
+        fullChatForSender.id,
+      );
+      const receiverUnread = await unreadRepository.getUnreadCount(
+        userParticipantSender.user.id,
+        userParticipantSender.chatId,
+      );
+      const userParticipantReceiverWithUnread = participantTransformer(
+        userParticipantReceiver,
+        receiverUnread,
+      );
+      const receiverUnreadCountsForChat = await unreadRepository.getUnreadCountsForChat(
+        fullChatForReceiver.id,
       );
 
       return {
         message: normalizeMessage(message),
         isNewChat: true,
         chatId: targetChatId,
-        chat: transformChat(
-          fullChat,
-          unreadCountsForChat,
-          userParticipantWithUnread,
+        fullChatForSender: transformChat(
+          fullChatForSender,
+          senderUnreadCountsForChat,
+          userParticipantSenderWithUnread,
+        ),
+        fullChatForReceiver: transformChat(
+          fullChatForReceiver,
+          receiverUnreadCountsForChat,
+          userParticipantReceiverWithUnread,
         ),
       };
     }

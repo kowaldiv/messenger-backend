@@ -3,33 +3,6 @@ import { AppError } from "../errors/index.js";
 import { ChatService } from "../service/interfaces/chat.service.interface.js";
 
 export function chatController(chatService: ChatService) {
-  // const getChatParticipants = async (
-  //   request: FastifyRequest,
-  //   reply: FastifyReply,
-  // ) => {
-  //   try {
-  //     const userId = request.currentUser.userId;
-  //     const { chatId } = request.params as { chatId: string };
-
-  //     const participants = await chatService.getChatParticipants(
-  //       chatId,
-  //       userId,
-  //     );
-
-  //     return reply.send({
-  //       success: true,
-  //       data: participants,
-  //     });
-  //   } catch (error) {
-  //     console.error("Get chat participants error", error);
-  //     return reply.status(500).send({
-  //       success: false,
-  //       message:
-  //         error instanceof AppError ? error.message : "GET_PARTICIPANTS_FAILED",
-  //     });
-  //   }
-  // };
-
   const updateLastReadMessageTime = async (
     request: FastifyRequest,
     reply: FastifyReply,
@@ -62,7 +35,6 @@ export function chatController(chatService: ChatService) {
   };
 
   return {
-    // getChatParticipants,
     updateLastReadMessageTime,
   };
 }

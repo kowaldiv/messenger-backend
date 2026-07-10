@@ -16,7 +16,8 @@ export interface MessageService {
     message: PublicMessage;
     chatId: string;
     isNewChat: boolean;
-    chat?: PublicChat;
+    fullChatForSender?: PublicChat;
+    fullChatForReceiver?: PublicChat;
   }>;
   sendInviteToChat: (
     userId: string,

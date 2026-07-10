@@ -1,4 +1,6 @@
 import { PublicChat } from "../transformers/chat.transformer.js";
+import { PublicMessage } from "../transformers/message.transformer.js";
+import { PublicChatParticipant } from "../transformers/participant.transformer.js";
 // import { ChatParticipantWithUnread } from "../transformers/participant.transformer.js";
 
 export type CreateChatDto =
@@ -17,11 +19,23 @@ export interface ChatService {
       inviteLinkToken?: string | undefined;
       chatId?: string | undefined;
     },
-  ) => Promise<PublicChat>;
-  // getChatParticipants(
-  //   chatId: string,
-  //   userId: string,
-  // ): Promise<ChatParticipantWithUnread[]>;
+  ) => Promise<{
+    chat: PublicChat;
+    newParticipant: PublicChatParticipant;
+    newMessage?: PublicMessage;
+  }>;
   getAllUserChats(userId: string): Promise<PublicChat[]>;
   updateLastReadMessageTime(userId: string, chatId: string): Promise<void>;
+  leaveFromChat(userId: string, chatId: string): Promise<void>;
+  deleteChat(userId: string, chatId: string): Promise<void>;
+  transferOwnership(
+    chatId: string,
+    currentOwnerId: string,
+    newOwnerId: string,
+  ): Promise<void>;
+  kickUserFromChat(
+    chatId: string,
+    adminId: string,
+    targetUserId: string,
+  ): Promise<void>;
 }

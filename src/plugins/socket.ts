@@ -9,6 +9,10 @@ import { createChatHandler } from "../socket/handlers/chats/createChat.handler.j
 import { joinChatHandler } from "../socket/handlers/chats/joinChat.handler.js";
 import { sendMessageHandler } from "../socket/handlers/messages/sendMessage.handler.js";
 import { inviteHandler } from "../socket/handlers/messages/invite.handler.js";
+import { deleteChatHandler } from "../socket/handlers/chats/deleteChatHandler.js";
+import { kickUserHandler } from "../socket/handlers/chats/kickUser.handler.js";
+import { leaveChatHandler } from "../socket/handlers/chats/leaveChatHandler.js";
+import { transferOwnershipHandler } from "../socket/handlers/chats/transferOwnershipHandler.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -69,6 +73,10 @@ export default fp(
       joinAllChatsHandler(socket, io, instance.services.chat);
       createChatHandler(socket, io, instance.services.chat);
       joinChatHandler(socket, io, instance.services.chat);
+      deleteChatHandler(socket, io, instance.services.chat);
+      kickUserHandler(socket, io, instance.services.chat);
+      leaveChatHandler(socket, io, instance.services.chat);
+      transferOwnershipHandler(socket, io, instance.services.chat);
 
       socket.on("disconnect", () => {
         instance.log.info(`User ${user.chatId} disconnected: ${socket.id}`);

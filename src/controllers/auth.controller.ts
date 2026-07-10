@@ -118,9 +118,24 @@ export function authController(authService: AuthService) {
 
   const refreshToken = async (request: FastifyRequest, reply: FastifyReply) => {
     const refreshToken = request.cookies?.refresh_token;
-    if (!refreshToken) throw new UnauthorizedError("Сессия устарела! Вам нужно войти в акканут");
-    const { accessToken, newRefreshToken } =
-      await authService.refreshToken(refreshToken);
+    if (!refreshToken)
+      throw new UnauthorizedError("Сессия устарела! Вам нужно войти в акканут");
+
+    const userAgent = request.headers["user-agent"] || "";
+    const parser = new UAParser(userAgent);
+    const result = parser.getResult();
+    // Формируем читаемый fingerprint
+    const device =
+      result.device.model || result.device.type || "Unknown Device";
+    const browser = result.browser.name || "Unknown Browser";
+    const os = result.os.name || "Unknown OS";
+
+    const fingerprint = `${device} • ${browser} • ${os}`;
+
+    const { accessToken, newRefreshToken } = await authService.refreshToken(
+      refreshToken,
+      fingerprint,
+    );
     reply.setCookie("access_token", accessToken, {
       httpOnly: true,
       secure: true,

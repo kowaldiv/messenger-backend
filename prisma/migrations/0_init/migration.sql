@@ -111,7 +111,7 @@ create table
     metadata JSONB default '{}',
     created_at timestamp not null default NOW (),
     edited_at timestamp not null default NOW (),
-    foreign key (chat_id) references chats (id) on delete set null,
+    foreign key (chat_id) references chats (id) on delete cascade,
     foreign key (user_id) references users (id) on delete set null,
     foreign key (reply_to_id) references messages (id) on delete set null
   );
