@@ -1,5 +1,4 @@
 import { Prisma } from "../../../generated/prisma/browser.js";
-import { chatInfoSelect } from "./chat.selects.js";
 import { avatarSelect } from "./user.selects.js";
 
 export const PublicInviteLinkSelect = {
@@ -9,7 +8,7 @@ export const PublicInviteLinkSelect = {
   expiresAt: true,
   chat: {
     select: {
-      ...chatInfoSelect,
+      id: true,
       title: true,
       avatars: {
         select: avatarSelect,

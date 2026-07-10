@@ -53,6 +53,12 @@ export function messageService(
           );
         }
       }
+
+      const isUserInChat = chatRepository.userInChat(chat.id, userId);
+      if (!isUserInChat) {
+        throw new BadRequestError("Пользователь не состоит в чате!");
+      }
+
       // Чат существует — отправляем сообщение в существующий чат
       const message = await messageRepository.create({
         userId,
@@ -148,9 +154,8 @@ export function messageService(
         userParticipantSender,
         senderUnread,
       );
-      const senderUnreadCountsForChat = await unreadRepository.getUnreadCountsForChat(
-        fullChatForSender.id,
-      );
+      const senderUnreadCountsForChat =
+        await unreadRepository.getUnreadCountsForChat(fullChatForSender.id);
       const receiverUnread = await unreadRepository.getUnreadCount(
         userParticipantSender.user.id,
         userParticipantSender.chatId,
@@ -159,9 +164,8 @@ export function messageService(
         userParticipantReceiver,
         receiverUnread,
       );
-      const receiverUnreadCountsForChat = await unreadRepository.getUnreadCountsForChat(
-        fullChatForReceiver.id,
-      );
+      const receiverUnreadCountsForChat =
+        await unreadRepository.getUnreadCountsForChat(fullChatForReceiver.id);
 
       return {
         message: normalizeMessage(message),
@@ -248,7 +252,7 @@ export function messageService(
 
     if (
       destinationChat.type === "channel" &&
-      destinationChat.channelSettings.isPrivate
+      !destinationChat.channelSettings.isPrivate
     ) {
       const messages = await Promise.all(
         processedChats.map(({ chatId }) =>
@@ -259,6 +263,7 @@ export function messageService(
               type: "invite",
               metadata: {
                 chat: {
+                  id: destinationChat.id,
                   title: destinationChat.title,
                   avatars: destinationChat.avatars,
                 },

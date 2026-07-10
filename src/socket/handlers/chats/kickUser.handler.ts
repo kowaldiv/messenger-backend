@@ -30,8 +30,6 @@ export const kickUserHandler = (
         targetSocket.leave(`chat:${chatId}`);
         targetSocket.emit("chat:deleted", { chatId });
       }
-
-      socket.emit("chat:kickSuccess", { chatId, targetUserId });
     } catch (error) {
       console.error("Kick user error:", error);
       if (error instanceof AppError) {

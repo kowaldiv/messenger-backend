@@ -144,18 +144,6 @@ export function chatService(
         await inviteLinkRepository.remove(inviteLink.id);
       }
 
-      // Создаем сообщение о присоединении
-      const newMessage = await messageRepository.create({
-        chatId,
-        userId,
-        type: "joined",
-        metadata: {
-          userId: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          username: user.username,
-        },
-      });
       await chatRepository.addParticipant(chatId, userId, "member");
 
       if (!fullChat)
@@ -179,6 +167,30 @@ export function chatService(
         fullChat.id,
       );
 
+      if (fullChat.type === "channel") {
+        return {
+          chat: transformChat(
+            fullChat,
+            unreadCountsForChat,
+            userParticipantWithUnread,
+          ),
+          newParticipant: userParticipantWithUnread,
+        };
+      }
+
+      // Создаем сообщение о присоединении
+      const newMessage = await messageRepository.create({
+        chatId,
+        userId,
+        type: "joined",
+        metadata: {
+          userId: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username,
+        },
+      });
+
       return {
         chat: transformChat(
           fullChat,
@@ -186,7 +198,7 @@ export function chatService(
           userParticipantWithUnread,
         ),
         newParticipant: userParticipantWithUnread,
-        newMessage: normalizeMessage(newMessage),
+        newMessage: newMessage && normalizeMessage(newMessage),
       };
     } else if (options.chatId) {
       // Прямой вход по ID чата
@@ -351,7 +363,7 @@ export function chatService(
       throw new NotFoundError("Чат не найден");
     }
 
-    const participant = await chatRepository.userInChat(currentOwnerId, chatId);
+    const participant = await chatRepository.userInChat(chatId, currentOwnerId);
     if (!participant) {
       throw new NotFoundError("Вы не являетесь участником чата");
     }
@@ -360,7 +372,7 @@ export function chatService(
       throw new BadRequestError("Только владелец может передать права");
     }
 
-    const newParticipant = await chatRepository.userInChat(newOwnerId, chatId);
+    const newParticipant = await chatRepository.userInChat(chatId, newOwnerId);
     if (!newParticipant) {
       throw new NotFoundError("Пользователь не является участником чата");
     }
@@ -378,7 +390,7 @@ export function chatService(
       throw new NotFoundError("Чат не найден");
     }
 
-    const adminParticipant = await chatRepository.userInChat(adminId, chatId);
+    const adminParticipant = await chatRepository.userInChat(chatId, adminId);
     if (!adminParticipant) {
       throw new NotFoundError("Вы не являетесь участником чата");
     }
@@ -394,8 +406,8 @@ export function chatService(
     }
 
     const targetParticipant = await chatRepository.userInChat(
-      targetUserId,
       chatId,
+      targetUserId,
     );
     if (!targetParticipant) {
       throw new NotFoundError("Пользователь не является участником чата");

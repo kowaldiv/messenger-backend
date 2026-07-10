@@ -21,7 +21,7 @@ export const leaveChatHandler = (
       // Отключаем пользователя от комнаты чата
       socket.leave(`chat:${chatId}`);
 
-      socket.emit("chat:leaveSuccess", { chatId });
+      socket.emit("chat:deleted", { chatId });
     } catch (error) {
       console.error("Leave chat error:", error);
       if (error instanceof AppError) {

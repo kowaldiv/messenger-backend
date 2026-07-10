@@ -11,7 +11,7 @@ export function messageController(messageService: MessageService) {
       beforeId: before,
       limit: 30,
     });
-
+    console.log(JSON.stringify(result, null, 1))
     return reply.status(200).send(result);
   };
 
