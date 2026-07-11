@@ -314,7 +314,7 @@ export function chatService(
   };
 
   const updateLastReadMessageTime = async (userId: string, chatId: string) => {
-    const isUserInChat = await chatRepository.userInChat(userId, chatId);
+    const isUserInChat = await chatRepository.userInChat(chatId, userId);
     if (!isUserInChat) throw new BadRequestError("Пользователь не в чате");
 
     await chatRepository.updateLastReadMessageTime(userId, chatId);
