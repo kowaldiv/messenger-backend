@@ -39,26 +39,26 @@ export default fp(async (instance) => {
   async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       // ✅ Логируем ВСЕ куки
-      console.log('=== AUTHENTICATE DEBUG ===');
-      console.log('All cookies:', request.cookies);
-      console.log('Token cookie:', request.cookies?.token);
-      console.log('Refresh token cookie:', request.cookies?.refresh_token);
+      // console.log('=== AUTHENTICATE DEBUG ===');
+      // console.log('All cookies:', request.cookies);
+      // console.log('Token cookie:', request.cookies?.access_token);
+      // console.log('Refresh token cookie:', request.cookies?.refresh_token);
       
-      const token = request.cookies?.token;
+      const accessToken = request.cookies?.access_token;
       
-      if (!token) {
+      if (!accessToken) {
         console.log('❌ No token cookie found');
         throw new UnauthorizedError("NO_TOKEN_PROVIDED");
       }
 
-      console.log('✅ Token found, length:', token.length);
-      console.log('Token preview:', token.substring(0, 30) + '...');
+      // console.log('✅ Token found, length:', accessToken.length);
+      // console.log('Token preview:', accessToken.substring(0, 30) + '...');
 
       // ✅ Проверяем JWT_SECRET
-      console.log('JWT_SECRET used:', config.JWT_SECRET ? 'Set' : 'Not set');
+      // console.log('JWT_SECRET used:', config.JWT_SECRET ? 'Set' : 'Not set');
 
-      const decoded = await instance.jwt.verify(token);
-      console.log('✅ Token verified successfully:', decoded);
+      const decoded = await instance.jwt.verify(accessToken);
+      // console.log('✅ Token verified successfully:', decoded);
       
       request.currentUser = decoded as {
         userId: string;
@@ -75,4 +75,6 @@ export default fp(async (instance) => {
     }
   },
 );
+}, {
+  name: "jwt"
 });

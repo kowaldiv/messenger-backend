@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { AvatarRepository } from "./interfaces/avatar.repository.interface.js";
 import { Prisma } from "../generated/prisma/browser.js";
+import { avatarSelect } from "./prisma/selects/user.selects.js";
 
 export function avatarRepository(instance: FastifyInstance): AvatarRepository {
   const prisma = instance.prisma;
@@ -12,17 +13,12 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
   ) => {
     const whereCondition =
       entityType === "user" ? { userId: entityId } : { chatId: entityId };
-    const avatar = await prisma.avatars.findUnique({
+    const avatar = await prisma.avatar.findUnique({
       where: {
         ...whereCondition,
         id: avatarId,
       },
-      select: {
-        id: true,
-        avatarUrl: true,
-        isPrimary: true,
-        createdAt: true,
-      },
+      select: avatarSelect
     });
     return avatar;
   };
@@ -30,16 +26,11 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
   const findAvatars = async (entityType: "user" | "chat", entityId: string) => {
     const whereCondition =
       entityType === "user" ? { userId: entityId } : { chatId: entityId };
-    const avatar = await prisma.avatars.findMany({
+    const avatar = await prisma.avatar.findMany({
       where: {
         ...whereCondition,
       },
-      select: {
-        id: true,
-        avatarUrl: true,
-        isPrimary: true,
-        createdAt: true,
-      },
+      select: avatarSelect
     });
     return avatar;
   };
@@ -53,7 +44,7 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
   ) => {
     const whereCondition =
       entityType === "user" ? { userId: entityId } : { chatId: entityId };
-    await prisma.avatars.updateMany({
+    await prisma.avatar.updateMany({
       where: {
         ...whereCondition,
         isPrimary: true,
@@ -61,19 +52,14 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
       data: { isPrimary: false },
     });
 
-    const newAvatar = await prisma.avatars.create({
+    const newAvatar = await prisma.avatar.create({
       data: {
         ...whereCondition,
         avatarUrl,
         isPrimary: true,
         entityType: "user",
       },
-      select: {
-        id: true,
-        avatarUrl: true,
-        isPrimary: true,
-        createdAt: true,
-      },
+      select: avatarSelect
     });
     return newAvatar;
   };
@@ -86,7 +72,7 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
     const whereCondition =
       entityType === "user" ? { userId: entityId } : { chatId: entityId };
     await prisma.$transaction([
-      prisma.avatars.updateMany({
+      prisma.avatar.updateMany({
         where: {
           ...whereCondition,
           isPrimary: true,
@@ -94,7 +80,7 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
         data: { isPrimary: false },
       }),
 
-      prisma.avatars.update({
+      prisma.avatar.update({
         where: {
           ...whereCondition,
           id: avatarId,
@@ -111,7 +97,7 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
   ) => {
     const whereCondition =
       entityType === "user" ? { userId: entityId } : { chatId: entityId };
-    const lastAdded = await prisma.avatars.findFirst({
+    const lastAdded = await prisma.avatar.findFirst({
       where: { ...whereCondition, NOT: { id: avatarId } },
       orderBy: { createdAt: "desc" },
       select: { id: true },
@@ -120,7 +106,7 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
     const operations: Prisma.PrismaPromise<any>[] = [];
 
     operations.push(
-      prisma.avatars.delete({
+      prisma.avatar.delete({
         where: {
           ...whereCondition,
           id: avatarId,
@@ -130,7 +116,7 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
 
     if (lastAdded) {
       operations.push(
-        prisma.avatars.update({
+        prisma.avatar.update({
           where: {
             ...whereCondition,
             id: lastAdded.id,
@@ -143,26 +129,11 @@ export function avatarRepository(instance: FastifyInstance): AvatarRepository {
     await prisma.$transaction(operations);
   };
 
-  const ensureUserIsChatOwner = async (userId: string, chatId: string) => {
-    const participant = await prisma.chatParticipants.findFirst({
-      where: {
-        chatId,
-        userId,
-      },
-    });
-    if (participant && participant.role === "owner") {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
   return {
     findAvatar,
     findAvatars,
     addAvatar,
     setPrimaryAvatar,
     deleteAvatar,
-    ensureUserIsChatOwner,
   };
 }

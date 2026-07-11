@@ -55,12 +55,12 @@ create table
 
 create table
   chat_participants (
-    id UUID primary key default uuidv7 (),
     chat_id UUID not null,
     user_id UUID not null,
     role varchar(20) not null default 'member' check (role in ('member', 'moderator', 'owner')),
     joined_at timestamp not null default NOW (),
     last_read_message_time timestamp not null default NOW (),
+    primary key (chat_id, user_id),
     foreign key (chat_id) references chats (id) on delete cascade,
     foreign key (user_id) references users (id) on delete cascade
   );
@@ -102,15 +102,18 @@ create table
 create table
   messages (
     id UUID primary key default uuidv7 (),
-    chat_id UUID,
+    chat_id UUID not null,
     user_id UUID,
+    type varchar(20) not null default 'text' check (type in ('text', 'invite', 'joined')),
     text text,
     reply_to_id UUID,
     is_deleted boolean not null default false,
+    metadata JSONB default '{}',
     created_at timestamp not null default NOW (),
     edited_at timestamp not null default NOW (),
-    foreign key (chat_id) references chats (id) on delete set null,
-    foreign key (user_id) references users (id) on delete set null
+    foreign key (chat_id) references chats (id) on delete cascade,
+    foreign key (user_id) references users (id) on delete set null,
+    foreign key (reply_to_id) references messages (id) on delete set null
   );
 
 create table
@@ -126,12 +129,12 @@ create table
 
 create table
   message_reactions (
-    id UUID primary key default uuidv7 (),
     message_id UUID not null,
     user_id UUID,
     emoji varchar(10) not null,
+    primary key (message_id, user_id),
     foreign key (message_id) references messages (id) on delete cascade,
-    foreign key (user_id) references users (id) on delete set null
+    foreign key (user_id) references users (id) on delete cascade
   );
 
 create table

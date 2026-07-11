@@ -5,12 +5,17 @@ import {
   ValidationError,
 } from "../errors/index.js";
 import { AvatarRepository } from "../repositories/interfaces/avatar.repository.interface.js";
-import { AvatarService, uploadAvatarInput } from "./interface.js";
-import { StorageService } from "./implementations/storage.service.js";
+import {
+  AvatarService,
+  uploadAvatarInput,
+} from "./interfaces/avatar.service.interface.js";
+import { ChatRepository } from "../repositories/interfaces/chat.repository.interface.js";
+import { StorageRepository } from "../repositories/implementations/storage.service.js";
 
 export function avatarService(
   avatarRepository: AvatarRepository,
-  storageService: StorageService,
+  chatRepository: ChatRepository,
+  storageRepository: StorageRepository,
 ): AvatarService {
   const validateFile = (file: uploadAvatarInput["file"]) => {
     // разрешенные типы аватаров
@@ -20,7 +25,7 @@ export function avatarService(
     if (!file) {
       throw new ValidationError("FILE_IS_REQUIRED");
     }
-    if (!allowedTypes.includes(file.minetype)) {
+    if (!allowedTypes.includes(file.mimetype)) {
       throw new ValidationError("INVALID_FILE_TYPE");
     }
     if (file.size > maxSize) {
@@ -32,8 +37,7 @@ export function avatarService(
     // оптимизируем, делаем 500 на 500 пикселей и квадратную
     return await sharp(buffer)
       .resize(500, 500, {
-        fit: "inside",
-        withoutEnlargement: true,
+        fit: "cover",
       })
       .jpeg({
         quality: 80,
@@ -46,19 +50,19 @@ export function avatarService(
     entityId: string,
     input: uploadAvatarInput,
   ) => {
-    // получаем файл, проверяем, оптимизируем
     const { file } = input;
     validateFile(file);
-    // отправляем в сервис чтоб он сохранился 
+
     const optimizedBuffer = await optimizeImage(file.buffer);
-    const fileName = `${entityId}-${new Date()}`;
     const folder = `users/${entityId}/avatars`;
-    const avatarUrl = await storageService.uploadFile(
+
+    // Просто передаём имя с правильным расширением
+    const avatarUrl = await storageRepository.uploadFile(
       optimizedBuffer,
-      fileName,
+      "avatar.jpg", // ← любое имя, главное — расширение
       folder,
     );
-    // создаем пользователя в БД
+
     const avatar = await avatarRepository.addAvatar(
       "user",
       entityId,
@@ -80,14 +84,17 @@ export function avatarService(
   };
 
   const deleteUserAvatar = async (entityId: string, avatarId: string) => {
-    // проверяем существует ли этот аватар у пользователя
     const avatar = await avatarRepository.findAvatar(
       "user",
       entityId,
       avatarId,
     );
     if (!avatar) throw new NotFoundError("AVATAR_NOT_FOUND");
-    // удаляем у пользователя эту аватарку 
+
+    // Удаляем файл из S3
+    await storageRepository.deleteFile(avatar.avatarUrl);
+
+    // Удаляем запись из БД
     await avatarRepository.deleteAvatar("user", entityId, avatarId);
   };
 
@@ -97,7 +104,7 @@ export function avatarService(
     input: uploadAvatarInput,
   ) => {
     // проверяем что пользователь админ в этом чате чтоб менять аватарки
-    const isUserChatOwner = avatarRepository.ensureUserIsChatOwner(
+    const isUserChatOwner = await chatRepository.ensureUserIsChatOwner(
       userId,
       chatId,
     );
@@ -108,12 +115,11 @@ export function avatarService(
     const { file } = input;
     validateFile(file);
     const optimizedBuffer = await optimizeImage(file.buffer);
-    // отправляем в сервис чтоб он сохранился 
-    const fileName = `${chatId}-${new Date()}`;
+    // отправляем в сервис чтоб он сохранился
     const folder = `chats/${chatId}/avatars`;
-    const avatarUrl = await storageService.uploadFile(
+    const avatarUrl = await storageRepository.uploadFile(
       optimizedBuffer,
-      fileName,
+      "avatar.jpg",
       folder,
     );
     // сохраняем в БД
@@ -127,7 +133,7 @@ export function avatarService(
     avatarId: string,
   ) => {
     // проверяем что пользователь админ в этом чате чтоб менять аватарки
-    const isUserChatOwner = avatarRepository.ensureUserIsChatOwner(
+    const isUserChatOwner = await chatRepository.ensureUserIsChatOwner(
       userId,
       chatId,
     );
@@ -146,23 +152,24 @@ export function avatarService(
     chatId: string,
     avatarId: string,
   ) => {
-    // проверяем что пользователь админ в этом чате чтоб менять аватарки
-    const isUserChatOwner = avatarRepository.ensureUserIsChatOwner(
+    const isUserChatOwner = await chatRepository.ensureUserIsChatOwner(
       userId,
       chatId,
     );
     if (!isUserChatOwner) {
       throw new ForbiddenError("ONLY_OWNER_CAN_MANAGE_AVATAR");
     }
-    // проверяем существует ли этот аватар у чата
+
     const avatar = await avatarRepository.findAvatar("chat", chatId, avatarId);
     if (!avatar) throw new NotFoundError("AVATAR_NOT_FOUND");
-    // удаляем у чата эту аватарку 
+
+    // ✅ Добавили удаление из S3
+    await storageRepository.deleteFile(avatar.avatarUrl);
     await avatarRepository.deleteAvatar("chat", chatId, avatarId);
   };
 
   const getAvatars = async (entityType: "user" | "chat", entityId: string) => {
-    // получаем все аватарки у сущности 
+    // получаем все аватарки у сущности
     const avatars = await avatarRepository.findAvatars(entityType, entityId);
     return avatars;
   };

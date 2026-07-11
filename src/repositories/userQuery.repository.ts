@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { UserQueryRepository } from "./interfaces/userQuery.repository.interface.js";
+import { publicUserSelect, publicUserWithOneAvatarSelect } from "./prisma/selects/user.selects.js";
 
 export function userQueryRepository(
   instance: FastifyInstance,
@@ -7,81 +8,25 @@ export function userQueryRepository(
   const prisma = instance.prisma;
 
   const findByIdWithPrimaryAvatar = async (id: string) => {
-    const user = prisma.users.findUnique({
+    const user = prisma.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        bio: true,
-        lastSeen: true,
-        createdAt: true,
-        avatars: {
-          where: { isPrimary: true },
-          take: 1,
-          select: {
-            id: true,
-            avatarUrl: true,
-            isPrimary: true,
-            createdAt: true,
-          },
-        },
-      },
+      select: publicUserWithOneAvatarSelect,
     });
     return user;
   };
 
   const findByIdWithAvatars = async (id: string) => {
-    const user = prisma.users.findUnique({
+    const user = prisma.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        bio: true,
-        lastSeen: true,
-        createdAt: true,
-        avatars: {
-          select: {
-            id: true,
-            avatarUrl: true,
-            isPrimary: true,
-            createdAt: true,
-          },
-          orderBy: {
-            isPrimary: "desc",
-          },
-        },
-      },
+      select: publicUserSelect,
     });
     return user;
   };
 
   const findByEmailWithAvatars = async (email: string) => {
-    const user = prisma.users.findUnique({
+    const user = prisma.user.findUnique({
       where: { email },
-      select: {
-        id: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        bio: true,
-        lastSeen: true,
-        createdAt: true,
-        avatars: {
-          select: {
-            id: true,
-            avatarUrl: true,
-            isPrimary: true,
-            createdAt: true,
-          },
-          orderBy: {
-            isPrimary: "desc",
-          },
-        },
-      },
+      select: publicUserSelect,
     });
     return user;
   };
@@ -89,32 +34,14 @@ export function userQueryRepository(
   const findManyByUsernamePatternWithPrimaryAvatar = async (
     usernamePattern: string,
   ) => {
-    const users = prisma.users.findMany({
+    const users = prisma.user.findMany({
       where: {
         username: {
           contains: usernamePattern,
           mode: "insensitive",
         },
       },
-      select: {
-        id: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        bio: true,
-        lastSeen: true,
-        createdAt: true,
-        avatars: {
-          where: { isPrimary: true },
-          take: 1,
-          select: {
-            id: true,
-            avatarUrl: true,
-            isPrimary: true,
-            createdAt: true,
-          },
-        },
-      },
+      select: publicUserWithOneAvatarSelect,
       take: 10,
     });
     return users;

@@ -39,3 +39,9 @@ export class ForbiddenError extends AppError {
     super(code, 403);
   }
 }
+
+export class BadRequestError extends AppError {
+  constructor(code: string = "Bad Request") {
+    super(code, 400);
+  }
+}
