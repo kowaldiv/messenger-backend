@@ -30,20 +30,20 @@ export function userController(userService: UserService) {
     return reply.status(200).send();
   };
 
-  const updateLastSeen = async (
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ) => {
-    const userId = request.currentUser.userId;
+  // const updateLastSeen = async (
+  //   request: FastifyRequest,
+  //   reply: FastifyReply,
+  // ) => {
+  //   const userId = request.currentUser.userId;
 
-    await userService.updateLastSeen(userId);
+  //   await userService.updateLastSeen(userId);
 
-    return reply.status(200).send();
-  };
+  //   return reply.status(200).send();
+  // };
 
   return {
     getUserInfo,
     updateProfile,
-    updateLastSeen,
+    // updateLastSeen,
   };
 }

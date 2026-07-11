@@ -68,11 +68,15 @@ export function userRepository(instance: FastifyInstance): UserRepository {
     });
   };
 
-  const updateLastSeen = async (id: string): Promise<void> => {
-    await prisma.user.update({
+  const updateLastSeen = async (id: string) => {
+    const result = await prisma.user.update({
       where: { id },
       data: { lastSeen: new Date() },
+      select: {
+        lastSeen: true,
+      },
     });
+    return result.lastSeen;
   };
 
   // ------- удаление --------

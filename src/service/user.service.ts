@@ -41,7 +41,7 @@ export function userService(
   };
 
   const updateLastSeen = async (userId: string) => {
-    await userRepository.updateLastSeen(userId);
+    return await userRepository.updateLastSeen(userId);
   };
 
   return {

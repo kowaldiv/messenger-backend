@@ -50,28 +50,5 @@ export async function userTest(app: any) {
       const data2 = JSON.parse(res2.payload);
       assert.equal(user.username === data2.username, false);
     });
-
-    await test("POST /user/updateLastSeen", async () => {
-      const { accessToken, user } = await registerTestUser(app);
-
-      const res = await app.inject({
-        method: "POST",
-        url: "/user/updateLastSeen",
-        cookies: {
-          access_token: accessToken,
-        },
-      });
-      assert.equal(res.statusCode, 200);
-
-      const res2 = await app.inject({
-        method: "GET",
-        url: "/user/getInfo",
-        cookies: {
-          access_token: accessToken,
-        },
-      });
-      const data2 = JSON.parse(res2.payload);
-      assert.equal(user.lastSeen === data2.lastSeen, false);
-    });
   });
 }

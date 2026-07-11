@@ -14,5 +14,5 @@ export interface UserService {
     };
     userId: string;
   }): Promise<void>;
-  updateLastSeen(userId: string): Promise<void>;
+  updateLastSeen(userId: string): Promise<Date>;
 }

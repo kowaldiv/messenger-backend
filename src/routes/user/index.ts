@@ -28,11 +28,11 @@ const user: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     fastify.controllers.user.updateProfile,
   );
 
-  fastify.post(
-    "/updateLastSeen",
-    { preHandler: [fastify.authenticate] },
-    fastify.controllers.user.updateLastSeen,
-  );
+  // fastify.post(
+  //   "/updateLastSeen",
+  //   { preHandler: [fastify.authenticate] },
+  //   fastify.controllers.user.updateLastSeen,
+  // );
 };
 
 export default user;

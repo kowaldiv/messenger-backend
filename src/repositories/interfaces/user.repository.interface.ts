@@ -33,7 +33,7 @@ export interface UserRepository {
 
   updateProfile(id: string, data: UpdateUserProfileInput): Promise<void>;
   updatePassword(id: string, newPasswordHash: string): Promise<void>;
-  updateLastSeen(id: string): Promise<void>;
+  updateLastSeen(id: string): Promise<Date>;
 
   existsById(id: string): Promise<boolean>;
   existsByUsername(username: string): Promise<boolean>;
