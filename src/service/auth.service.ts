@@ -184,7 +184,7 @@ export function authService(
     );
     const refreshNonce = crypto.randomBytes(16).toString("hex");
     const newRefreshToken = instance.jwt.sign(
-      { userId: validToken.id, nonce: refreshNonce },
+      { userId: validToken.userId, nonce: refreshNonce },
       { expiresIn: `${config.REFRESH_TOKEN_EXPIRES_DAYS}d` },
     );
     const expiresAt = new Date();

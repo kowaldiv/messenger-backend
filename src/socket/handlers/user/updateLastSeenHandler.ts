@@ -2,8 +2,8 @@
 import { Socket } from "socket.io";
 import { Server as SocketIOServer } from "socket.io";
 import { UserService } from "../../../service/interfaces/user.service.interface.js";
-import { AppError } from "../../../errors/index.js";
 import { getUserSockets } from "../helpers.js";
+import { handleSocketError } from "../../utils/socketErrorHandler.js";
 
 export const updateLastSeenHandler = (
   socket: Socket,
@@ -13,15 +13,6 @@ export const updateLastSeenHandler = (
   socket.on("updateLastSeen", async () => {
     try {
       const userId = socket.data.currentUser?.userId;
-
-      if (!userId) {
-        socket.emit("error", {
-          message: "User not authenticated",
-          code: "UNAUTHORIZED",
-          statusCode: 401,
-        });
-        return;
-      }
 
       // Обновляем lastSeen в базе данных
       const lastSeen = await userService.updateLastSeen(userId);
@@ -65,18 +56,7 @@ export const updateLastSeenHandler = (
         }
       }
     } catch (error) {
-      console.error("Update lastSeen error:", error);
-      if (error instanceof AppError) {
-        socket.emit("error", {
-          message: error.message,
-          code: error.code || "UPDATE_LAST_SEEN_FAILED",
-          statusCode: error.statusCode || 500,
-        });
-      } else {
-        socket.emit("error", {
-          message: "Failed to update last seen",
-        });
-      }
+      handleSocketError(socket, error);
     }
   });
 };

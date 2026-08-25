@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import { Server as SocketIOServer } from "socket.io";
 import { ChatService } from "../../../service/interfaces/chat.service.interface.js";
-import { AppError } from "../../../errors/index.js";
+import { handleSocketError } from "../../utils/socketErrorHandler.js";
 
 export const leaveChatHandler = (
   socket: Socket,
@@ -23,18 +23,7 @@ export const leaveChatHandler = (
 
       socket.emit("chat:deleted", { chatId });
     } catch (error) {
-      console.error("Leave chat error:", error);
-      if (error instanceof AppError) {
-        socket.emit("error", {
-          message: error.message,
-          code: error.code || "LEAVE_CHAT_FAILED",
-          statusCode: error.statusCode || 500,
-        });
-      } else {
-        socket.emit("error", {
-          message: "Failed to leave chat",
-        });
-      }
+      handleSocketError(socket, error);
     }
   });
 };

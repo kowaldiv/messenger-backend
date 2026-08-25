@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 import { Server as SocketIOServer } from "socket.io";
 import { ChatService } from "../../../service/interfaces/chat.service.interface.js";
 import { joinUserToChat } from "../helpers.js";
-import { AppError } from "../../../errors/index.js";
+import { handleSocketError } from "../../utils/socketErrorHandler.js";
 
 export const joinAllChatsHandler = (
   socket: Socket,
@@ -25,18 +25,7 @@ export const joinAllChatsHandler = (
         count: userChats.length,
       });
     } catch (error) {
-      console.error(error);
-      if (error instanceof AppError) {
-        socket.emit("error", {
-          message: error.message || "Failed to send message",
-          code: error.code || "UNKNOWN_ERROR",
-          statusCode: error.statusCode || 500,
-        });
-      } else {
-        socket.emit("error", {
-          message: "Failed to send message",
-        });
-      }
+      handleSocketError(socket, error);
     }
   });
 };

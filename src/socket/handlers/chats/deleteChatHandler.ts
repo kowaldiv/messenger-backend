@@ -1,8 +1,8 @@
 import { Socket } from "socket.io";
 import { Server as SocketIOServer } from "socket.io";
 import { ChatService } from "../../../service/interfaces/chat.service.interface.js";
-import { AppError } from "../../../errors/index.js";
 import { getUserSockets } from "../helpers.js";
+import { handleSocketError } from "../../utils/socketErrorHandler.js";
 
 export const deleteChatHandler = (
   socket: Socket,
@@ -37,18 +37,7 @@ export const deleteChatHandler = (
 
       socket.emit("chat:deleteSuccess", { chatId });
     } catch (error) {
-      console.error("Delete chat error:", error);
-      if (error instanceof AppError) {
-        socket.emit("error", {
-          message: error.message,
-          code: error.code || "DELETE_CHAT_FAILED",
-          statusCode: error.statusCode || 500,
-        });
-      } else {
-        socket.emit("error", {
-          message: "Failed to delete chat",
-        });
-      }
+      handleSocketError(socket, error);
     }
   });
 };

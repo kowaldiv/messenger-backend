@@ -1,4 +1,8 @@
-import { ConflictError, NotFoundError } from "../errors/index.js";
+import {
+  ConflictError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../errors/index.js";
 import { UserRepository } from "../repositories/interfaces/user.repository.interface.js";
 import { UserQueryRepository } from "../repositories/interfaces/userQuery.repository.interface.js";
 import { UserService } from "./interfaces/user.service.interface.js";
@@ -40,7 +44,11 @@ export function userService(
     await userRepository.updateProfile(userId, data);
   };
 
-  const updateLastSeen = async (userId: string) => {
+  const updateLastSeen = async (userId: string | undefined) => {
+    if (!userId) {
+      throw new UnauthorizedError();
+    }
+
     return await userRepository.updateLastSeen(userId);
   };
 

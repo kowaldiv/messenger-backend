@@ -1,8 +1,8 @@
 import { Socket } from "socket.io";
 import { Server as SocketIOServer } from "socket.io";
 import { ChatService } from "../../../service/interfaces/chat.service.interface.js";
-import { AppError } from "../../../errors/index.js";
 import { getUserSockets } from "../helpers.js";
+import { handleSocketError } from "../../utils/socketErrorHandler.js";
 
 export const kickUserHandler = (
   socket: Socket,
@@ -31,18 +31,7 @@ export const kickUserHandler = (
         targetSocket.emit("chat:deleted", { chatId });
       }
     } catch (error) {
-      console.error("Kick user error:", error);
-      if (error instanceof AppError) {
-        socket.emit("error", {
-          message: error.message,
-          code: error.code || "KICK_USER_FAILED",
-          statusCode: error.statusCode || 500,
-        });
-      } else {
-        socket.emit("error", {
-          message: "Failed to kick user",
-        });
-      }
+      handleSocketError(socket, error);
     }
   });
 };

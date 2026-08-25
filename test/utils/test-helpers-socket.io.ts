@@ -39,13 +39,10 @@ export async function createTestChat(
   });
 
   // Отправляем запрос на создание чата
-  client.emit(
-    "createChat",
-    JSON.stringify({
-      type: type,
-      title: title,
-    }),
-  );
+  client.emit("createChat", {
+    type: type,
+    title: title,
+  });
 
   // Ждем ответа от сервера
   const chat = await createdChat;
