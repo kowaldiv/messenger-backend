@@ -1,8 +1,13 @@
 import { Socket } from "socket.io";
 import { Server as SocketIOServer } from "socket.io";
 import { ChatService } from "../../../service/interfaces/chat.service.interface.js";
-import { getUserSockets } from "../helpers.js";
+import { getUniqueUserIdsFromRoom, getUserSockets } from "../helpers.js";
 import { handleSocketError } from "../../utils/socketErrorHandler.js";
+import { z } from "zod";
+
+const deleteChatSchema = z.object({
+  chatId: z.string().min(1, "Chat ID is required"),
+});
 
 export const deleteChatHandler = (
   socket: Socket,
@@ -12,19 +17,13 @@ export const deleteChatHandler = (
   socket.on("deleteChat", async (data) => {
     try {
       const userId = socket.data.currentUser.userId;
-      const { chatId } = data;
+
+      const validatedData = deleteChatSchema.parse(data);
+      const { chatId } = validatedData;
 
       await chatService.deleteChat(chatId, userId); // ← поменял порядок
 
-      // Получаем все сокеты в комнате чата
-      const socketsInRoom = await io.in(`chat:${chatId}`).fetchSockets();
-
-      // Собираем уникальные userId участников
-      const userIds = new Set(
-        socketsInRoom
-          .map((s) => s.data.currentUser?.userId)
-          .filter((id): id is string => Boolean(id)),
-      );
+      const userIds = await getUniqueUserIdsFromRoom(io, chatId);
 
       // Для каждого пользователя находим ВСЕ его сокеты (все устройства)
       for (const participantId of userIds) {

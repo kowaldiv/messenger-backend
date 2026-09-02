@@ -46,3 +46,16 @@ export const sendNewChatToUser = async (
 
   return userSockets.length;
 };
+
+export const getUniqueUserIdsFromRoom = async (
+  io: SocketIOServer,
+  chatId: string,
+): Promise<Set<string>> => {
+  const socketsInRoom = await io.in(`chat:${chatId}`).fetchSockets();
+
+  return new Set(
+    socketsInRoom
+      .map((s) => s.data.currentUser?.userId)
+      .filter((id): id is string => Boolean(id)),
+  );
+};
