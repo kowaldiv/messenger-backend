@@ -16,8 +16,8 @@ export interface ChatService {
   joinChat: (
     userId: string,
     options: {
-      inviteLinkToken?: string | undefined;
-      chatId?: string | undefined;
+      inviteLinkToken?: string;
+      chatId?: string;
     },
   ) => Promise<{
     chat: PublicChat;

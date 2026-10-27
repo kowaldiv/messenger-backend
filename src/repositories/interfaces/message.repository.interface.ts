@@ -63,4 +63,12 @@ export interface MessageRepository {
     beforeId?: string;
     limit?: number;
   }) => Promise<Message[]>;
+  getMessage: (messageId: string) => Promise<Message | null>;
+  deleteMessage: (id: string) => Promise<void>;
+  update: (
+    id: string,
+    text?: string,
+    deletedAttachmentsIds?: string[],
+    addedAttachments?: Attachment[],
+  ) => Promise<Message | null>;
 }

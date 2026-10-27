@@ -38,9 +38,6 @@ export const createChatHandler = (
   socket.on("createChat", async (data) => {
     try {
       const userId = socket.data.currentUser.userId;
-
-      console.log(data);
-      console.log(typeof data);
       const validatedData = createChatSchema.parse(data);
 
       if (validatedData.type === "channel") {

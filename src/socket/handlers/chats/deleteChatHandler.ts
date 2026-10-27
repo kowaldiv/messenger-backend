@@ -17,8 +17,8 @@ export const deleteChatHandler = (
   socket.on("deleteChat", async (data) => {
     try {
       const userId = socket.data.currentUser.userId;
-
       const validatedData = deleteChatSchema.parse(data);
+      
       const { chatId } = validatedData;
 
       await chatService.deleteChat(chatId, userId); // ← поменял порядок

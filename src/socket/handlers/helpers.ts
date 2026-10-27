@@ -1,5 +1,6 @@
 import { Server as SocketIOServer } from "socket.io";
 import { PublicChat } from "../../service/transformers/chat.transformer.js";
+import { PublicMessage } from "../../service/transformers/message.transformer.js";
 
 export const getUserSockets = async (io: SocketIOServer, userId: string) => {
   const sockets = await io.fetchSockets();
@@ -21,7 +22,7 @@ export const joinUserToChat = async (
   // Подключаем каждый найденный сокет к комнате
   for (const socket of userSockets) {
     const roomName = `chat:${chatId}`;
-    await socket.join(roomName);
+    socket.join(roomName);
     console.log(`User ${userId} joined room: ${roomName}`);
   }
 
@@ -45,6 +46,17 @@ export const sendNewChatToUser = async (
   }
 
   return userSockets.length;
+};
+
+export const sendUserMessage = async (
+  io: SocketIOServer,
+  chatId: string,
+  message: PublicMessage,
+) => {
+  io.to(`chat:${chatId}`).emit("newMessage", {
+    success: true,
+    message,
+  });
 };
 
 export const getUniqueUserIdsFromRoom = async (

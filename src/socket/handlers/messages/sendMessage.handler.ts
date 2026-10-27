@@ -1,8 +1,18 @@
 import { Socket } from "socket.io";
 import { Server as SocketIOServer } from "socket.io";
+import { z } from "zod";
 import { MessageService } from "../../../service/interfaces/message.service.interface.js";
 import { joinUserToChat, sendNewChatToUser } from "../helpers.js";
 import { handleSocketError } from "../../utils/socketErrorHandler.js";
+
+const sendMessageSchema = z.object({
+  chatIdOrUserId: z.string().min(1, "ChatIdOrUserId is required").trim(),
+  text: z
+    .string()
+    .min(1, "Text is required")
+    .max(4000, "Text must be less than 4000 characters")
+    .trim(),
+});
 
 export const sendMessageHandler = (
   socket: Socket,
@@ -12,7 +22,8 @@ export const sendMessageHandler = (
   socket.on("sendMessage", async (data) => {
     try {
       const userId = socket.data.currentUser?.userId;
-      const { chatIdOrUserId, text } = data;
+      const validatedData = sendMessageSchema.parse(data);
+      const { chatIdOrUserId, text } = validatedData;
 
       const {
         message,
@@ -21,7 +32,6 @@ export const sendMessageHandler = (
         fullChatForSender,
         fullChatForReceiver,
       } = await messageService.create(userId, chatIdOrUserId, text);
-      // console.log(chat)
 
       if (isNewChat && fullChatForSender && fullChatForReceiver) {
         await sendNewChatToUser(io, userId, fullChatForSender);

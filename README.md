@@ -27,3 +27,21 @@ Run the test cases.
 ## Learn More
 
 To learn Fastify, check out the [Fastify documentation](https://fastify.dev/docs/latest/).
+
+# Репозиторий представляет из себя серверную часть мессенджера
+# Проект был создан с помощью Fastify-CLI
+
+## Вы можете запустить проект, используя следующие команды:
+
+### `npm install`
+### `npx prisma generate`
+### `npm run dev`
+P.S. Перед запуском требуется создать файл .env по примеру из .env.example
+
+## Запустить тесты можно следующие команды
+
+### `npm install`
+### `npx prisma generate`
+### `npm run dev`
+### `npm run test`
+P.S. Перед запуском требуется создать файл .env по примеру из .env.example

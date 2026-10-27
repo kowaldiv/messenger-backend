@@ -1,5 +1,7 @@
+import { Attachment } from "../../repositories/interfaces/message.repository.interface.js";
 import { PublicChat } from "../transformers/chat.transformer.js";
 import { PublicMessage } from "../transformers/message.transformer.js";
+
 
 export interface MessageService {
   create: (
@@ -7,11 +9,7 @@ export interface MessageService {
     chatId: string,
     text: string,
     replyToId?: string,
-    attachments?: {
-      fileUrl: string;
-      fileType: string;
-      fileName: string;
-    }[],
+    attachments?: Attachment[],
   ) => Promise<{
     message: PublicMessage;
     chatId: string;
@@ -34,4 +32,12 @@ export interface MessageService {
     beforeId?: string;
     limit?: number;
   }) => Promise<{ messages: PublicMessage[]; hasMore: boolean }>;
+  deleteMessage: (params: { messageId: string; userId: string }) => Promise<void>;
+  updateMessage: (params: {
+    userId: string;
+    messageId: string;
+    text? : string;
+    deletedAttachmentsIds?: string[];
+    addedAttachments?: Attachment[];
+  }) => Promise<PublicMessage>;
 }

@@ -4,7 +4,10 @@ import {
   NotFoundError,
 } from "../errors/index.js";
 import { ChatRepository } from "../repositories/interfaces/chat.repository.interface.js";
-import { MessageRepository } from "../repositories/interfaces/message.repository.interface.js";
+import {
+  Attachment,
+  MessageRepository,
+} from "../repositories/interfaces/message.repository.interface.js";
 import { UserRepository } from "../repositories/interfaces/user.repository.interface.js";
 import { MessageService } from "./interfaces/message.service.interface.js";
 import { config } from "../config/index.js";
@@ -332,9 +335,60 @@ export function messageService(
     };
   };
 
+  const deleteMessage = async ({
+    messageId,
+    userId,
+  }: {
+    messageId: string;
+    userId: string;
+  }) => {
+    const message = await messageRepository.getMessage(messageId);
+
+    if (!(message && message.userId === userId)) {
+      throw new ConflictError("Сообщение не существует либо оно не ваше");
+    }
+
+    await messageRepository.deleteMessage(messageId);
+  };
+
+  const updateMessage = async ({
+    userId,
+    messageId,
+    text,
+    deletedAttachmentsIds,
+    addedAttachments,
+  }: {
+    userId: string;
+    messageId: string;
+    text?: string;
+    deletedAttachmentsIds?: string[];
+    addedAttachments?: Attachment[];
+  }) => {
+    const message = await messageRepository.getMessage(messageId);
+
+    if (!(message && message.userId === userId)) {
+      throw new ConflictError("Сообщение не существует либо оно не ваше");
+    }
+
+    const updatedMessage = await messageRepository.update(
+      messageId,
+      text,
+      deletedAttachmentsIds,
+      addedAttachments,
+    );
+
+    if (!updatedMessage) {
+      throw new ConflictError("Сообщение не существует либо оно не ваше");
+    }
+
+    return normalizeMessage(updatedMessage);
+  };
+
   return {
     create,
     sendInviteToChat,
     getMessages,
+    deleteMessage,
+    updateMessage,
   };
 }
